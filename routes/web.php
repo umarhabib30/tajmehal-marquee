@@ -24,16 +24,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
 
 Auth::routes();
 
 
 
 Route::middleware(['auth', 'admin_role'])->group(function () {
+    
     Route::get('admin/dashboard', [DashboardController::class, 'index']);
+    Route::get('/', [DashboardController::class, 'index']);
 
 
 
