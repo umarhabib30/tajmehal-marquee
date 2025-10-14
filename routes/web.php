@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\admin\AttendanceController;
 use App\Http\Controllers\admin\BookingController;
 use App\Http\Controllers\admin\CalendarController;
 
-use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\admin\CustomerController;
 use App\Http\Controllers\admin\DishController;
 use App\Http\Controllers\admin\InventoryController;
 use App\Http\Controllers\admin\StaffController;
@@ -95,19 +95,19 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
 
 
     Route::prefix('admin')->group(function () {
-        Route::get('/calendar', [App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('calendar.index');
-        Route::get('/calendar/events', [App\Http\Controllers\Admin\CalendarController::class, 'events'])->name('calendar.events');
+        Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+        Route::get('/calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
     });
 
 
 
     // routes/web.php (admin group)
     Route::prefix('admin')->name('attendance.')->group(function () {
-        Route::get('attendance/index', [App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('index');
-        Route::get('attendance/create', [App\Http\Controllers\Admin\AttendanceController::class, 'create'])->name('create');
-        Route::post('attendance/store', [App\Http\Controllers\Admin\AttendanceController::class, 'store'])->name('store');
-        Route::get('attendance/edit/{id}', [App\Http\Controllers\Admin\AttendanceController::class, 'edit'])->name('edit');
-        Route::put('attendance/update/{id}', [App\Http\Controllers\Admin\AttendanceController::class, 'update'])->name('update');
-        Route::delete('attendance/delete/{id}', [App\Http\Controllers\Admin\AttendanceController::class, 'destroy'])->name('destroy');
+        Route::get('attendance/index', [AttendanceController::class, 'index'])->name('index');
+        Route::get('attendance/create', [AttendanceController::class, 'create'])->name('create');
+        Route::post('attendance/store', [AttendanceController::class, 'store'])->name('store');
+        Route::get('attendance/edit/{id}', [AttendanceController::class, 'edit'])->name('edit');
+        Route::put('attendance/update/{id}', [AttendanceController::class, 'update'])->name('update');
+        Route::delete('attendance/delete/{id}', [AttendanceController::class, 'destroy'])->name('destroy');
     });
 });
