@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Staff;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
 {
@@ -33,16 +34,23 @@ class StaffController extends Controller
     // Store staff
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name'        => 'required|string|max:100',
             'role'        => 'required|string|max:50',
             'email'       => 'nullable|email|unique:staff,email',
-            'phone'       => ['required', 'regex:/^\d{11}$/'], // exactly 11 digits
+            'phone'       => ['required', 'regex:/^\d{11}$/'],
             'salary'      => 'nullable|numeric',
             'experience'  => 'nullable|integer|min:0',
             'status'      => 'nullable|string',
             'joining_date' => 'nullable|date',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'This email is already taken or invalid input provided.');
+        }
 
         Staff::create($request->all());
 
@@ -65,17 +73,24 @@ class StaffController extends Controller
     // Update staff
     public function update(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'id'          => 'required|exists:staff,id',
             'name'        => 'required|string|max:100',
             'role'        => 'required|string|max:50',
             'email'       => 'nullable|email|unique:staff,email,' . $request->id,
-            'phone'       => ['required', 'regex:/^\d{11}$/'], // exactly 11 digits
+            'phone'       => ['required', 'regex:/^\d{11}$/'],
             'salary'      => 'nullable|numeric',
             'experience'  => 'nullable|integer|min:0',
             'status'      => 'nullable|string',
             'joining_date' => 'nullable|date',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'This email is already taken or invalid input provided.');
+        }
 
         $staff = Staff::findOrFail($request->id);
         $staff->update($request->all());

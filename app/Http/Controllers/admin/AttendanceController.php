@@ -1,81 +1,93 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Staff;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class AttendanceController extends Controller
 {
-    public function index()
+    // Show monthly attendance grid
+    public function index(Request $request)
     {
-        $attendances = Attendance::with('staff')->orderBy('attendance_date', 'desc')->get();
+        $month = (int) $request->input('month', now()->month);
+        $year  = (int) $request->input('year', now()->year);
+
+        $start = Carbon::create($year, $month, 1)->startOfDay();
+        $end   = (clone $start)->endOfMonth();
+
+        $staffs = Staff::orderBy('name')->get();
+
+        // Fetch attendance records for the month
+        $records = Attendance::whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->get()
+            ->keyBy(fn($r) => $r->staff_id . '_' . $r->date->toDateString());
+
+        $days = collect();
+        for ($d = 1; $d <= $start->daysInMonth; $d++) {
+            $days->push(Carbon::create($year, $month, $d));
+        }
+
         $title = 'Attendance Management';
-        $heading = 'All Attendance Records';
+        $heading = 'Monthly Attendance — ' . $start->format('F Y');
         $active = 'attendance';
-        return view('admin.attendance.index', compact('attendances', 'title', 'heading', 'active'));
+
+        return view('admin.attendance.index', compact(
+            'staffs',
+            'records',
+            'days',
+            'month',
+            'year',
+            'title',
+            'heading',
+            'active'
+        ));
     }
 
-    public function create()
+    // Bulk Save (AJAX)
+    public function bulkSave(Request $request)
     {
-        $staffs = Staff::all();
-        $title = 'Attendance Management';
-        $heading = 'Add Attendance Record';
-        $active = 'attendance';
-        return view('admin.attendance.create', compact('staffs', 'title', 'heading', 'active'));
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'staff_id' => 'required|exists:staff,id',
-            'attendance_date' => 'required|date',
-            'entry_time' => 'nullable|date_format:H:i',
-            'exit_time' => 'nullable|date_format:H:i',
-            'status' => 'required|in:Present,Absent,Half Leave,Leave',
-            'remarks' => 'nullable|string',
+        $data = $request->validate([
+            'entries' => 'required|array',
+            'entries.*.staff_id' => 'required|exists:staff,id',
+            'entries.*.date' => 'required|date',
+            'entries.*.status' => 'nullable|in:P,A,L,O',
+            'entries.*.entry_time' => 'nullable|date_format:H:i',
+            'entries.*.exit_time' => 'nullable|date_format:H:i',
+            'entries.*.remarks' => 'nullable|string',
         ]);
 
-        Attendance::create($request->all());
-        return redirect()->route('attendance.index')
-            ->with('success', 'Attendance added successfully.');
+        $saved = 0;
+        foreach ($data['entries'] as $entry) {
+            if (empty($entry['status'])) {
+                Attendance::where('staff_id', $entry['staff_id'])
+                    ->where('date', $entry['date'])
+                    ->delete();
+                continue;
+            }
+
+            Attendance::updateOrCreate(
+                ['staff_id' => $entry['staff_id'], 'date' => $entry['date']],
+                [
+                    'status' => $entry['status'],
+                    'entry_time' => $entry['entry_time'] ?? null,
+                    'exit_time' => $entry['exit_time'] ?? null,
+                    'remarks' => $entry['remarks'] ?? null,
+                ]
+            );
+            $saved++;
+        }
+
+        return response()->json(['success' => true, 'message' => "$saved attendance entries saved."]);
     }
 
-    public function edit($id)
-    {
-        $attendance = Attendance::findOrFail($id);
-        $staffs = Staff::all();
-        $title = 'Attendance Management';
-        $heading = 'Edit Attendance Record';
-        $active = 'attendance';
-        return view('admin.attendance.edit', compact('attendance', 'staffs', 'title', 'heading', 'active'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'staff_id' => 'required|exists:staff,id',
-            'attendance_date' => 'required|date',
-            'entry_time' => 'nullable|date_format:H:i',
-            'exit_time' => 'nullable|date_format:H:i',
-            'status' => 'required|in:Present,Absent,Half Leave,Leave',
-            'remarks' => 'nullable|string',
-        ]);
-
-        $attendance = Attendance::findOrFail($id);
-        $attendance->update($request->all());
-
-        return redirect()->route('attendance.index')
-            ->with('success', 'Attendance updated successfully.');
-    }
-
+    // Delete attendance record
     public function destroy($id)
     {
         Attendance::findOrFail($id)->delete();
-        return redirect()->route('attendance.index')
-            ->with('success', 'Attendance deleted successfully.');
+        return redirect()->back()->with('success', 'Attendance deleted successfully.');
     }
 }

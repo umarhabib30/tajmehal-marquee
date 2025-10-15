@@ -82,6 +82,10 @@
 document.addEventListener('DOMContentLoaded', function () {
     var calendarEl = document.getElementById('calendar');
 
+    // Color palette for events
+    const colors = ['#007bff', '#28a745', '#ffc107', '#17a2b8', '#fd7e14', '#6f42c1', '#e83e8c'];
+    let colorIndex = 0;
+
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         themeSystem: 'bootstrap5',
@@ -96,6 +100,11 @@ document.addEventListener('DOMContentLoaded', function () {
         eventDidMount: function(info) {
             info.el.style.borderRadius = '8px';
             info.el.style.padding = '2px 4px';
+            info.el.style.cursor = 'pointer'; // ✅ Pointer on hover
+
+            // ✅ Different color per booking
+            info.el.style.backgroundColor = colors[colorIndex % colors.length];
+            colorIndex++;
         },
         eventClick: function(info) {
             const booking = info.event.extendedProps;
@@ -141,6 +150,11 @@ document.addEventListener('DOMContentLoaded', function () {
 #calendar {
     max-width: 100%;
     margin: 0 auto;
+    border: 1px solid #dee2e6; /* ✅ Calendar border */
+    border-radius: 8px;
+}
+.fc-daygrid-day-frame {
+    border: 1px solid #dee2e6; /* ✅ Day box borders */
 }
 .fc-toolbar-title {
     font-size: 1.25rem !important;

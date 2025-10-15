@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
 
 class CustomerController extends Controller
 {
@@ -33,14 +34,32 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|email|max:255|unique:customers,email',
-            'phone'       => 'required|digits:11',
-            'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/'],
-            'address'     => 'required|string|max:500',
-        ]);
+        // ✅ Validation
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'name'         => 'required|string|max:255',
+                'email'        => 'required|email|max:255|unique:customers,email',
+                'phone'        => 'required|digits:11',
+                'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:customers,idcardnumber'],
+                'address'      => 'required|string|max:500',
+            ]
+        );
 
+        // ✅ If validation fails, return with toaster-like message
+        if ($validator->fails()) {
+            if ($validator->errors()->has('email')) {
+                return redirect()->back()->with('error', 'This email address is already taken!')->withInput();
+            }
+
+            if ($validator->errors()->has('idcardnumber')) {
+                return redirect()->back()->with('error', 'This ID Card Number is already registered!')->withInput();
+            }
+
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // ✅ Save new record
         Customer::create($request->all());
 
         return redirect()->route('customer.index')->with('success', 'Customer created successfully!');
@@ -60,20 +79,37 @@ class CustomerController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|email|max:255|unique:customers,email,' . $id,
-            'phone'       => 'required|digits:11',
-            'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/'],
-            'address'     => 'required|string|max:500',
-        ]);
+        // ✅ Validation
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'name'         => 'required|string|max:255',
+                'email'        => 'required|email|max:255|unique:customers,email,' . $id,
+                'phone'        => 'required|digits:11',
+                'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:customers,idcardnumber,' . $id],
+                'address'      => 'required|string|max:500',
+            ]
+        );
 
+        // ✅ If validation fails, show toaster-style message
+        if ($validator->fails()) {
+            if ($validator->errors()->has('email')) {
+                return redirect()->back()->with('error', 'This email address is already taken!')->withInput();
+            }
+
+            if ($validator->errors()->has('idcardnumber')) {
+                return redirect()->back()->with('error', 'This ID Card Number is already registered!')->withInput();
+            }
+
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // ✅ Update record
         $customer = Customer::findOrFail($id);
         $customer->update($request->all());
 
         return redirect()->route('customer.index')->with('success', 'Customer updated successfully!');
     }
-
 
     public function destroy($id)
     {

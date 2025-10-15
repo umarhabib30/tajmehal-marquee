@@ -85,12 +85,12 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
         Route::post('store', [BookingController::class, 'store'])->name('store');
         Route::get('edit/{id}', [BookingController::class, 'edit'])->name('edit');
         Route::post('update/{id}', [BookingController::class, 'update'])->name('update');
-        Route::get('delete/{id}', [BookingController::class, 'delete'])->name('delete');
-
-
-        // 👇 Fetch customer details via AJAX
+        Route::delete('delete/{id}', [BookingController::class, 'destroy'])->name('delete'); // ✅ fixed
+        Route::get('show/{id}', [BookingController::class, 'show'])->name('show');
         Route::get('get-customer/{id}', [BookingController::class, 'getCustomer'])->name('getCustomer');
     });
+
+
 
 
 
@@ -100,14 +100,10 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
     });
 
 
-
-    // routes/web.php (admin group)
-    Route::prefix('admin')->name('attendance.')->group(function () {
-        Route::get('attendance/index', [AttendanceController::class, 'index'])->name('index');
-        Route::get('attendance/create', [AttendanceController::class, 'create'])->name('create');
-        Route::post('attendance/store', [AttendanceController::class, 'store'])->name('store');
-        Route::get('attendance/edit/{id}', [AttendanceController::class, 'edit'])->name('edit');
-        Route::put('attendance/update/{id}', [AttendanceController::class, 'update'])->name('update');
-        Route::delete('attendance/delete/{id}', [AttendanceController::class, 'destroy'])->name('destroy');
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+        Route::post('attendance/bulk-save', [AttendanceController::class, 'bulkSave'])->name('attendance.bulkSave');
+        Route::delete('attendance/{id}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
     });
+  
 });

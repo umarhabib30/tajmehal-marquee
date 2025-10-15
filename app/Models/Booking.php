@@ -9,23 +9,28 @@ class Booking extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'customer_id',
-        'event_type',
-        'guests_count',
-        'booking_date',
-        'booking_time',
-        'time_slot',
-        'hall_name',
-        'decoration_type',
-        'menu_package',
-        'total_amount',
-        'discount_percent',
-        'advance_payment',
-        'remaining_amount',
-        'payment_status',
-        'status',
-        'special_request',
-    ];
+      
+    'customer_id',
+    'event_type',
+    'guests_count',
+    'booking_date',
+    'start_date',
+    'end_date',
+    'booking_time',
+    'time_slot',
+    'hall_name',
+    'decoration_type',
+    'menu_package',
+    'total_amount',
+    'discount_percent',
+    'advance_payment',
+    'remaining_amount',
+    'payment_status',
+    'status',
+    'special_request',
+];
+
+   
 
     public function customer()
     {

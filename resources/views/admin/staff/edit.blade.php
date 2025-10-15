@@ -8,16 +8,6 @@
             <div class="card-body">
                 <a href="{{ route('staff.index') }}" class="btn btn-secondary mb-3">Back</a>
 
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                               <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <form action="{{ route('staff.update') }}" method="POST">
                     @csrf
                     <input type="hidden" name="id" value="{{ $staff->id }}">
@@ -67,5 +57,17 @@
         </div>
     </div>
 </div>
+
+@if (session('success'))
+<script>toastr.success("{{ session('success') }}");</script>
+@endif
+
+@if (session('error'))
+<script>toastr.error("{{ session('error') }}");</script>
+@endif
+
+@if ($errors->any())
+<script>toastr.error("{{ $errors->first() }}");</script>
+@endif
 
 @endsection

@@ -32,19 +32,24 @@ class DishController extends Controller
 
     public function store(Request $request)
     {
-        // ✅ Validation
         $request->validate([
             'name'           => 'required|string|max:255',
             'price_per_head' => 'required|numeric|min:0',
         ]);
 
-        // ✅ Save
+        // ✅ Check if dish with same name already exists
+        if (Dish::where('name', $request->name)->exists()) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Dish name already exists!');
+        }
+
         Dish::create([
             'name'           => $request->name,
             'price_per_head' => $request->price_per_head,
         ]);
 
-        // ✅ Redirect with Success Message
         return redirect()
             ->route('dishes.index')
             ->with('success', 'Dish created successfully!');
@@ -69,20 +74,17 @@ class DishController extends Controller
 
     public function update(Request $request)
     {
-
         $request->validate([
-            'name'           => 'required|string|max:255',
+            'name'           => 'required|string|max:255|unique:dishes,name,' . $request->id,
             'price_per_head' => 'required|numeric|min:0',
         ]);
 
         $dish = Dish::findOrFail($request->id);
 
-
         $dish->update([
             'name'           => $request->name,
             'price_per_head' => $request->price_per_head,
         ]);
-
 
         return redirect()
             ->route('dishes.index')
@@ -93,7 +95,6 @@ class DishController extends Controller
     {
         $dish = Dish::findOrFail($id);
         $dish->delete();
-
 
         return redirect()
             ->back()

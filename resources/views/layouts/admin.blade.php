@@ -277,7 +277,7 @@
 
 
 
-{{-- for attendence --}}
+{{-- Attendance Section --}}
 <li class="nav-item">
     <a class="nav-link @if ($active == 'attendance') active @endif" href="#"
         data-toggle="collapse" aria-expanded="false" data-target="#submenu-attendance"
@@ -285,17 +285,17 @@
         <i class="fa fa-fw fa-user-check"></i> Attendance
         <span class="badge badge-success">New</span>
     </a>
-    <div id="submenu-attendance" class="collapse submenu">
+
+    <div id="submenu-attendance" class="collapse submenu @if ($active == 'attendance') show @endif">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('attendance.index') }}">View All</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('attendance.create') }}">Add</a>
+                <a class="nav-link" href="{{ route('admin.attendance.index') }}">View All</a>
             </li>
         </ul>
     </div>
 </li>
+
+
 
 
                         </ul>

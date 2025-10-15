@@ -14,13 +14,14 @@ return new class extends Migration
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('staff_id')->constrained('staff')->onDelete('cascade');
-            $table->date('attendance_date');
+            $table->date('date');
+            $table->enum('status', ['P', 'A', 'L', 'O'])->nullable(); // P=Present, A=Absent, L=Leave, O=Off
             $table->time('entry_time')->nullable();
             $table->time('exit_time')->nullable();
-            $table->enum('status', ['Present', 'Absent', 'Half Leave', 'Leave'])->default('Present');
             $table->text('remarks')->nullable();
             $table->timestamps();
-            
+
+            $table->unique(['staff_id', 'date']);
         });
     }
 
