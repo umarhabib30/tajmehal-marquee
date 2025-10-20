@@ -84,16 +84,7 @@
                 </form>
             </div>
 
-            <div class="card-footer bg-white p-0">
-                <div class="card-footer-item card-footer-item-bordered">
-                    <a href="{{ route('register') }}" class="footer-link">Create An Account</a>
-                </div>
-                <div class="card-footer-item card-footer-item-bordered">
-                    @if (Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="footer-link">Forgot Password</a>
-                    @endif
-                </div>
-            </div>
+           
         </div>
     </div>
     <!-- ============================================================== -->

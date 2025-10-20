@@ -1,96 +1,122 @@
 @extends('layouts.admin')
-@section('content')
-    <div class="row">
-        <div class="col-xl-12">
-            <div class="card">
-                <h5 class="card-header">{{ $heading }}</h5>
-                <div class="card-body">
-                    <a href="{{ route('booking.index') }}" class="btn btn-secondary mb-3">Back</a>
 
-                    <table class="table table-bordered">
-                        <tr>
-                            <th>Customer Name</th>
-                            <td>{{ $booking->customer->name ?? 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Email</th>
-                            <td>{{ $booking->customer->email ?? 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Phone</th>
-                            <td>{{ $booking->customer->phone ?? 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Event Type</th>
-                            <td>{{ $booking->event_type }}</td>
-                        </tr>
-                        <tr>
-                            <th>Guests Count</th>
-                            <td>{{ $booking->guests_count }}</td>
-                        </tr>
-                        <tr>
-                            <th>Booking Date</th>
-                            <td>{{ $booking->booking_date }}</td>
-                        </tr>
-                        <tr>
-                            <th>Start Date</th>
-                            <td>{{ $booking->start_date }}</td>
-                        </tr>
-                        <tr>
-                            <th>End Date</th>
-                            <td>{{ $booking->end_date }}</td>
-                        </tr>
-                        <tr>
-                            <th>Booking Time</th>
-                            <td>{{ $booking->booking_time }}</td>
-                        </tr>
-                        <tr>
-                            <th>Time Slot</th>
-                            <td>{{ $booking->time_slot }}</td>
-                        </tr>
-                        <tr>
-                            <th>Hall Name</th>
-                            <td>{{ $booking->hall_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Decoration Type</th>
-                            <td>{{ $booking->decoration_type }}</td>
-                        </tr>
-                        <tr>
-                            <th>Menu Package</th>
-                            <td>{{ $booking->menu_package }}</td>
-                        </tr>
-                        <tr>
-                            <th>Total Amount</th>
-                            <td>{{ number_format($booking->total_amount, 0) }}</td>
-                        </tr>
-                        <tr>
-                            <th>Discount (%)</th>
-                            <td>{{ $booking->discount_percent }}</td>
-                        </tr>
-                        <tr>
-                            <th>Advance Payment</th>
-                            <td>{{ number_format($booking->advance_payment, 0) }}</td>
-                        </tr>
-                        <tr>
-                            <th>Remaining Amount</th>
-                            <td>{{ number_format($booking->remaining_amount, 0) }}</td>
-                        </tr>
-                        <tr>
-                            <th>Payment Status</th>
-                            <td>{{ $booking->payment_status }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td>{{ $booking->status }}</td>
-                        </tr>
-                        <tr>
-                            <th>Special Request</th>
-                            <td>{{ $booking->special_request }}</td>
-                        </tr>
-                    </table>
+@section('content')
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <h5 class="card-header">{{ $heading }}</h5>
+            <div class="card-body">
+                
+                {{-- ✅ Fixed Route --}}
+                <a href="{{ route('admin.booking.index') }}" class="btn btn-secondary mb-3">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Customer Name</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->customer->name ?? 'N/A' }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Email</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->customer->email ?? 'N/A' }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Phone</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->customer->phone ?? 'N/A' }}" readonly>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Event Type</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->event_type }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Guests Count</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->guests_count }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Booking Date</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->booking_date }}" readonly>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Start Date</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->start_date }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>End Date</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->end_date }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Booking Time</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->booking_time }}" readonly>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Time Slot</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->time_slot }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Hall Name</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->hall_name }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Decoration Type</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->decoration_type }}" readonly>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Menu Package</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->menu_package }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Total Amount</strong></label>
+                        <input type="text" class="form-control" value="{{ number_format($booking->total_amount, 0) }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Discount (%)</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->discount_percent }}" readonly>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Advance Payment</strong></label>
+                        <input type="text" class="form-control" value="{{ number_format($booking->advance_payment, 0) }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Remaining Amount</strong></label>
+                        <input type="text" class="form-control" value="{{ number_format($booking->remaining_amount, 0) }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Payment Status</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->payment_status }}" readonly>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Status</strong></label>
+                        <input type="text" class="form-control" value="{{ $booking->status }}" readonly>
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label"><strong>Special Request</strong></label>
+                        <textarea class="form-control" rows="2" readonly>{{ $booking->special_request }}</textarea>
+                    </div>
+
+                    {{-- ✅ Customer Signature --}}
+                    @if($booking->customer_signature)
+                        <div class="col-md-12 mt-4 text-center">
+                            <label class="form-label d-block"><strong>Customer Signature</strong></label>
+                            <div class="border p-2 d-inline-block">
+                                <img src="{{ $booking->customer_signature }}" alt="Customer Signature" class="img-fluid"
+                                    style="max-height:200px; border:1px solid #ddd;">
+                            </div>
+                        </div>
+                    @else
+                        <div class="col-md-12 mt-4 text-center">
+                            <span class="text-muted">No signature available for this booking.</span>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
+</div>
 @endsection

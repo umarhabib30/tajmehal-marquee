@@ -5,24 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Attendance extends Model
+class Attendence extends Model
 {
     use HasFactory;
+
+    protected $table = 'attendences';
+
     protected $fillable = [
         'staff_id',
         'date',
-        'status',
         'entry_time',
         'exit_time',
-        'remarks',
-    ];
-
-    protected $casts = [
-        'date' => 'date',
+        'status',
     ];
 
     public function staff()
     {
-        return $this->belongsTo(\App\Models\Staff::class);
+        return $this->belongsTo(Staff::class);
     }
 }

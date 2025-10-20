@@ -21,4 +21,13 @@ class Staff extends Model
         'joining_date',
         'status'
     ];
+    public function attendances()
+    {
+        return $this->hasMany(Attendence::class);
+    }
+
+    public function salaries()
+    {
+        return $this->hasMany(Salary::class);
+    }
 }

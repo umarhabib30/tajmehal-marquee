@@ -241,60 +241,68 @@
                             <!-- Booking Menu -->
                             <li class="nav-item">
                                 <a class="nav-link @if ($active == 'booking') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-booking"
+                                    data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#submenu-booking"
                                     aria-controls="submenu-booking">
                                     <i class="fa fa-fw fa-calendar-check"></i> Booking
-                                    <span class="badge badge-danger">New</span>
+                                    <span class="badge bg-danger">New</span>
                                 </a>
+
                                 <div id="submenu-booking" class="collapse submenu">
                                     <ul class="nav flex-column">
                                         <li class="nav-item">
-                                            <a class="nav-link" href="{{ url('admin/booking/index') }}">View All</a>
+                                            <a class="nav-link" href="{{ route('admin.booking.index') }}">View
+                                                All</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="{{ url('admin/booking/create') }}">Add</a>
+                                            <a class="nav-link" href="{{ route('admin.booking.create') }}">Add
+                                                New</a>
                                         </li>
                                     </ul>
                                 </div>
                             </li>
+
+
                             {{-- Calendar --}}
                             <li class="nav-item">
-                                <a class="nav-link @if ($active == 'calendar') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-calendar"
-                                    aria-controls="submenu-calendar">
+                                <a class="nav-link @if ($active == 'calendar') active @endif"
+                                    href="{{ route('calendar.index') }}">
                                     <i class="fa fa-fw fa-calendar"></i> Calendar
                                     <span class="badge badge-success">New</span>
                                 </a>
-                                <div id="submenu-calendar" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="{{ route('calendar.index') }}">View
-                                                Calendar</a>
-                                        </li>
-                                    </ul>
-                                </div>
                             </li>
 
 
 
-{{-- Attendance Section --}}
+                            {{-- Attendance Section --}}
+                            <li class="nav-item">
+                                <a class="nav-link @if ($active == 'attendence') active @endif"
+                                    href="{{ route('attendence.index') }}">
+                                    <i class="fa fa-fw fa-user-check"></i> Attendance
+                                    <span class="badge badge-success">New</span>
+                                </a>
+                            </li>
+
+
+
+
+                            {{-- Salary Section --}}
+                            <li class="nav-item">
+                                <a class="nav-link @if ($active == 'salary') active @endif"
+                                    href="{{ route('admin.salary.index') }}">
+                                    <i class="fa fa-fw fa-money-bill"></i> Salary
+                                    <span class="badge badge-success">New</span>
+                                </a>
+                            </li>
+
+
+{{-- Dish Package --}}
 <li class="nav-item">
-    <a class="nav-link @if ($active == 'attendance') active @endif" href="#"
-        data-toggle="collapse" aria-expanded="false" data-target="#submenu-attendance"
-        aria-controls="submenu-attendance">
-        <i class="fa fa-fw fa-user-check"></i> Attendance
-        <span class="badge badge-success">New</span>
+    <a class="nav-link @if ($active == 'dish_package') active @endif"
+       href="{{ route('admin.dish_package.index') }}">
+        <i class="fa fa-fw fa-utensils"></i> Dish Packages
+        <span class="badge badge-info">New</span>
     </a>
-
-    <div id="submenu-attendance" class="collapse submenu @if ($active == 'attendance') show @endif">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('admin.attendance.index') }}">View All</a>
-            </li>
-        </ul>
-    </div>
 </li>
-
 
 
 
@@ -376,9 +384,9 @@
     <script src="{{ asset('https://cdn.datatables.net/rowgroup/1.0.4/js/dataTables.rowGroup.min.js') }}"></script>
     <script src="{{ asset('https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js') }}"></script>
     <script src="{{ asset('https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js') }}"></script>
-    <script src="{{asset('https://code.jquery.com/jquery-3.6.0.min.js')}}"></script>
-<script src="{{asset('https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js')}}"></script>
-<script src="{{asset('https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js')}}"></script>
+    <script src="{{ asset('https://code.jquery.com/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js') }}"></script>
 
     @yield('script')
 

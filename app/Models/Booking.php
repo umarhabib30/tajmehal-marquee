@@ -28,6 +28,7 @@ class Booking extends Model
     'payment_status',
     'status',
     'special_request',
+        'customer_signature', 
 ];
 
    
