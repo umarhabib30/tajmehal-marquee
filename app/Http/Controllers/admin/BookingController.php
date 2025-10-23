@@ -3,98 +3,103 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Customer;
-use Illuminate\Http\Request;
+use App\Models\DishPackage;
+use App\Models\Dish;
 
 class BookingController extends Controller
 {
-    // Display all bookings
-    public function index()
+    // Index page
+    public function index(Request $request)
     {
-        $bookings = Booking::with('customer')->latest()->get();
-        $title = "Bookings List";
-        $active = "bookings";
-        $heading = "All Bookings";
+        $bookings = Booking::with('customer')->orderBy('booking_date', 'desc')->get();
 
-        return view('admin.booking.index', compact('bookings', 'title', 'active', 'heading'));
+        $data = [
+            'bookings' => $bookings,
+            'heading' => 'Bookings',
+            'active' => 'booking',
+            'title' => 'Bookings List'
+        ];
+
+        return view('admin.bookings.index', $data);
     }
 
     // Show create form
     public function create()
     {
-        $customers = Customer::all();
-        $title = "Create Booking";
-        $active = "bookings";
-        $heading = "Add New Booking";
+        $data = [
+            'customers' => Customer::all(),
+            'dishPackages' => DishPackage::all(),
+            'dishes' => Dish::all(),
+            'heading' => 'Create Booking',
+            'active' => 'booking',
+            'title' => 'Create Booking'
+        ];
 
-        return view('admin.booking.create', compact('customers', 'title', 'active', 'heading'));
+        return view('admin.bookings.create', $data);
     }
 
     // Store booking
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'customer_id'       => 'required|exists:customers,id',
-            'event_type'        => 'required|string|max:255',
-            'guests_count'      => 'nullable|integer',
-            'booking_date'      => 'required|date',
-            'start_date'        => 'nullable|date',
-            'end_date'          => 'nullable|date',
-            'booking_time'      => 'nullable|string|max:255',
-            'time_slot'         => 'nullable|string|max:255',
-            'hall_name'         => 'nullable|string|max:255',
-            'decoration_type'   => 'nullable|string|max:255',
-            'menu_package'      => 'nullable|string|max:255',
-            'total_amount'      => 'required|numeric',
-            'discount_percent'  => 'nullable|numeric|min:0|max:100',
-            'advance_payment'   => 'nullable|numeric|min:0',
-            'payment_status'    => 'nullable|string|max:255',
-            'status'            => 'nullable|string|max:255',
-            'special_request'   => 'nullable|string',
-            'customer_signature' => 'nullable|string',
+            'customer_id' => 'required|exists:customers,id',
+            'event_type' => 'required',
+            'hall_name' => 'required',
+            'booking_date' => 'required|date',
+            'time_slot' => 'required',
+            'start_time' => 'required',
+            'end_time' => 'required',
+            'dish_package_id' => 'required|exists:dish_packages,id',
+            'guests_count' => 'required|integer',
+            'price_per_head' => 'required|numeric',
+            'total_amount' => 'required|numeric',
+            'remaining_amount' => 'required|numeric',
         ]);
 
-        $discount = $request->discount_percent ?? 0;
-        $discounted = $request->total_amount - ($request->total_amount * ($discount / 100));
-        $remaining = $discounted - ($request->advance_payment ?? 0);
+        Booking::create($validated + [
+            'decoration' => $request->decoration ?? null,
+            'decoration_amount' => $request->decoration_amount ?? 0,
+            'tax' => $request->tax ?? 0,
+            'customer_signature' => $request->customer_signature ?? null,
+            'manager_signature' => $request->manager_signature ?? null,
+            'notes' => $request->notes ?? null
+        ]);
 
-        $booking = Booking::create(array_merge($validated, [
-            'total_amount' => $discounted,
-            'remaining_amount' => $remaining,
-        ]));
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Booking created successfully!',
-                'booking_id' => $booking->id
-            ]);
-        }
-
-        return redirect()->route('admin.booking.index')->with('success', 'Booking created successfully!');
+        return redirect()->route('admin.bookings.index')->with('success', 'Booking created successfully');
     }
 
-    // Show customer details for AJAX
-    public function getCustomer($id)
+    // Show single booking
+    public function show($id)
     {
-        $customer = Customer::find($id);
-        return response()->json([
-            'email' => $customer->email ?? '',
-            'phone' => $customer->phone ?? ''
-        ]);
+        $booking = Booking::with('customer', 'dishPackage.dishes')->findOrFail($id);
+
+        $data = [
+            'booking' => $booking,
+            'heading' => 'Booking Details',
+            'active' => 'booking',
+            'title' => 'Booking Details'
+        ];
+
+        return view('admin.bookings.show', $data);
     }
 
-    // Edit booking
+    // Edit booking form
     public function edit($id)
     {
-        $booking = Booking::findOrFail($id);
-        $customers = Customer::all();
-        $title = "Edit Booking";
-        $active = "bookings";
-        $heading = "Update Booking";
+        $data = [
+            'booking' => Booking::findOrFail($id),
+            'customers' => Customer::all(),
+            'dishPackages' => DishPackage::all(),
+            'dishes' => Dish::all(),
+            'heading' => 'Edit Booking',
+            'active' => 'booking',
+            'title' => 'Edit Booking'
+        ];
 
-        return view('admin.booking.edit', compact('booking', 'customers', 'title', 'active', 'heading'));
+        return view('admin.bookings.edit', $data);
     }
 
     // Update booking
@@ -103,70 +108,58 @@ class BookingController extends Controller
         $booking = Booking::findOrFail($id);
 
         $validated = $request->validate([
-            'customer_id'       => 'required|exists:customers,id',
-            'event_type'        => 'required|string|max:255',
-            'guests_count'      => 'nullable|integer',
-            'booking_date'      => 'required|date',
-            'start_date'        => 'nullable|date',
-            'end_date'          => 'nullable|date',
-            'booking_time'      => 'nullable|string|max:255',
-            'time_slot'         => 'nullable|string|max:255',
-            'hall_name'         => 'nullable|string|max:255',
-            'decoration_type'   => 'nullable|string|max:255',
-            'menu_package'      => 'nullable|string|max:255',
-            'total_amount'      => 'required|numeric',
-            'discount_percent'  => 'nullable|numeric|min:0|max:100',
-            'advance_payment'   => 'nullable|numeric|min:0',
-            'payment_status'    => 'nullable|string|max:255',
-            'status'            => 'nullable|string|max:255',
-            'special_request'   => 'nullable|string',
-            'customer_signature' => 'nullable|string',
+            'customer_id' => 'required|exists:customers,id',
+            'event_type' => 'required',
+            'hall_name' => 'required',
+            'booking_date' => 'required|date',
+            'time_slot' => 'required',
+            'start_time' => 'required',
+            'end_time' => 'required',
+            'dish_package_id' => 'required|exists:dish_packages,id',
+            'guests_count' => 'required|integer',
+            'price_per_head' => 'required|numeric',
+            'total_amount' => 'required|numeric',
+            'remaining_amount' => 'required|numeric',
         ]);
 
-        $discount = $request->discount_percent ?? 0;
-        $discounted = $request->total_amount - ($request->total_amount * ($discount / 100));
-        $remaining = $discounted - ($request->advance_payment ?? 0);
+        $booking->update($validated + [
+            'decoration' => $request->decoration ?? null,
+            'decoration_amount' => $request->decoration_amount ?? 0,
+            'tax' => $request->tax ?? 0,
+            'customer_signature' => $request->customer_signature ?? null,
+            'manager_signature' => $request->manager_signature ?? null,
+            'notes' => $request->notes ?? null
+        ]);
 
-        $booking->update(array_merge($validated, [
-            'total_amount' => $discounted,
-            'remaining_amount' => $remaining,
-        ]));
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Booking updated successfully!',
-                'booking_id' => $booking->id
-            ]);
-        }
-
-        return redirect()->route('admin.booking.index')->with('success', 'Booking updated successfully!');
+        return redirect()->route('admin.bookings.index')->with('success', 'Booking updated successfully');
     }
 
     // Delete booking
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
         $booking = Booking::findOrFail($id);
         $booking->delete();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Booking deleted successfully!',
-            ]);
-        }
-
-        return redirect()->route('admin.booking.index')->with('success', 'Booking deleted successfully!');
+        return redirect()->route('admin.bookings.index')->with('success', 'Booking deleted successfully');
     }
 
-    // Show booking details
-    public function show($id)
+    // AJAX - get customer details
+    public function getCustomer($id)
     {
-        $booking = Booking::with('customer')->findOrFail($id);
-        $title = "Booking Details";
-        $active = "bookings";
-        $heading = "View Booking";
+        $customer = Customer::findOrFail($id);
 
-        return view('admin.booking.show', compact('booking', 'title', 'active', 'heading'));
+        return response()->json([
+            'phone' => $customer->phone,
+            'email' => $customer->email,
+            'address' => $customer->address
+        ]);
+    }
+
+    // AJAX - get dishes for selected package
+    public function getPackageDishes($package_id)
+    {
+        $package = DishPackage::with('dishes')->findOrFail($package_id);
+
+        return response()->json($package->dishes);
     }
 }

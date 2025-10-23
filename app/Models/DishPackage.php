@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class DishPackage extends Model
 {
     use HasFactory;
-    protected $fillable = ['one_dish', 'two_dish'];
+    protected $fillable = ['name'];
 
-    protected $casts = [
-        'one_dish' => 'array',
-        'two_dish' => 'array',
-    ];
+    public function dishes()
+    {
+        return $this->belongsToMany(Dish::class, 'dish_package_dish');
+    }
 }

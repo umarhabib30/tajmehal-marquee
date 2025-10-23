@@ -14,4 +14,8 @@ class Dish extends Model
         'name',
         'price_per_head'
     ];
+    public function packages()
+    {
+        return $this->belongsToMany(DishPackage::class, 'dish_package_dish');
+    }
 }

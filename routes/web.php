@@ -10,6 +10,7 @@ use App\Http\Controllers\admin\DishController;
 use App\Http\Controllers\admin\DishPackageController;
 use App\Http\Controllers\admin\InventoryController;
 use App\Http\Controllers\admin\SalaryController;
+
 use App\Http\Controllers\admin\StaffController;
 use App\Http\Controllers\DashboardController;
 
@@ -40,7 +41,7 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
 
 
 
-
+// for dishes
     Route::get('admin/dishes/index', [DishController::class, 'index'])->name('dishes.index');
     Route::get('admin/dishes/create', [DishController::class, 'create'])->name('dishes.create');
     Route::post('admin/dishes/store', [DishController::class, 'store'])->name('dishes.store');
@@ -84,25 +85,40 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
 
 
 
+    Route::prefix('admin')->name('admin.')->group(function () {
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/booking', [BookingController::class, 'index'])->name('booking.index');
-    Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
-    Route::post('/booking/store', [BookingController::class, 'store'])->name('booking.store');
-    Route::get('/booking/get-customer/{id}', [BookingController::class, 'getCustomer'])->name('booking.getCustomer');
-    Route::get('/booking/show/{id}', [BookingController::class, 'show'])->name('booking.show');
-    Route::get('/booking/edit/{id}', [BookingController::class, 'edit'])->name('booking.edit');
-    Route::post('/booking/update/{id}', [BookingController::class, 'update'])->name('booking.update');
-    Route::post('/booking/delete/{id}', [BookingController::class, 'destroy'])->name('booking.destroy');
-});
+        // INDEX - show all bookings
+        Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
 
+        // CREATE - show create form
+        Route::get('bookings/create', [BookingController::class, 'create'])->name('bookings.create');
 
+        // STORE - save new booking
+        Route::post('bookings/store', [BookingController::class, 'store'])->name('bookings.store');
+
+        // SHOW - show single booking
+        Route::get('bookings/show/{id}', [BookingController::class, 'show'])->name('bookings.show');
+
+        // EDIT - show edit form
+        Route::get('bookings/edit/{id}', [BookingController::class, 'edit'])->name('bookings.edit');
+
+        // UPDATE - update booking
+        Route::post('bookings/update/{id}', [BookingController::class, 'update'])->name('bookings.update');
+
+        // DELETE - delete booking
+        Route::post('bookings/delete/{id}', [BookingController::class, 'destroy'])->name('bookings.delete');
+
+        // AJAX routes
+        Route::get('bookings/customer/{id}', [BookingController::class, 'getCustomer'])->name('bookings.getCustomer');
+        Route::get('bookings/package-dishes/{id}', [BookingController::class, 'getPackageDishes'])->name('bookings.getPackageDishes');
+    });
 
 
 Route::prefix('admin')->group(function () {
-        Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+       
         Route::get('/calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
     });
+
 
 
 
@@ -111,41 +127,59 @@ Route::prefix('admin')->group(function () {
     // Attendance list
     Route::get('attendence', [AttendenceController::class, 'index'])->name('attendence.index');
 
-    // Edit form (optional, if using modal or separate page)
-    Route::get('attendence/edit/{id}', [AttendenceController::class, 'edit'])->name('attendence.edit');
-
-    // Update attendance (POST instead of PUT)
-    Route::post('attendence/update/{id}', [AttendenceController::class, 'update'])->name('attendence.update');
+    // View monthly report
+    Route::get('attendence/view/{id}', [AttendenceController::class, 'view'])->name('attendence.view');
 
     // Store new attendance
     Route::post('attendence/store', [AttendenceController::class, 'store'])->name('attendence.store');
 
-    // Mark entry/exit/leave
-    Route::post('attendence/markEntry', [AttendenceController::class, 'markEntry'])->name('attendence.markEntry');
-    Route::post('attendence/markExit', [AttendenceController::class, 'markExit'])->name('attendence.markExit');
-    Route::post('attendence/markLeave', [AttendenceController::class, 'markLeave'])->name('attendence.markLeave');
+    // Update attendance (for leave/present checkbox)
+    Route::post('attendence/update', [AttendenceController::class, 'update'])->name('attendence.update');
 
-    // View monthly report
-    Route::get('attendence/view/{id}', [AttendenceController::class, 'view'])->name('attendence.view');
-
-    // Delete attendance (POST instead of DELETE)
+    // Delete attendance
     Route::post('attendence/delete/{id}', [AttendenceController::class, 'delete'])->name('attendence.delete');
+        // AJAX update status (for checkboxes)
+        Route::post('attendence/update-status', [AttendenceController::class, 'updateStatus'])->name('attendence.updateStatus');
 });
 
 
 
+
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::resource('salary', SalaryController::class);
+        Route::get('salary', [SalaryController::class, 'index'])->name('salary.index');          // list
+        Route::get('salary/create', [SalaryController::class, 'create'])->name('salary.create'); // create form
+        Route::post('salary', [SalaryController::class, 'store'])->name('salary.store');         // store salary
+        Route::get('salary/{salary}', [SalaryController::class, 'show'])->name('salary.show');   // show slip
+        Route::post('salary/{salary}/delete', [SalaryController::class, 'delete'])->name('salary.delete'); // delete salary
+        Route::get('get-absent-days', [SalaryController::class, 'getAbsentDays'])->name('salary.getAbsentDays'); // AJAX fetch absent
     });
 
 
 
-
-
-
-
-
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::resource('dish_package',DishPackageController::class);
+
+        // List
+        Route::get('dish_package', [DishPackageController::class, 'index'])
+            ->name('dish_package.index');
+
+        // Create form
+        Route::get('dish_package/create', [DishPackageController::class, 'create'])
+            ->name('dish_package.create');
+
+        // Store
+        Route::post('dish_package', [DishPackageController::class, 'store'])
+            ->name('dish_package.store');
+
+        // Edit form
+        Route::get('dish_package/{id}/edit', [DishPackageController::class, 'edit'])
+            ->name('dish_package.edit');
+
+        // Update — NOTE: using POST (no PUT)
+        Route::post('dish_package/{id}/update', [DishPackageController::class, 'update'])
+            ->name('dish_package.update');
+
+        // Delete — NOTE: using POST for AJAX delete
+        Route::post('dish_package/{id}/delete', [DishPackageController::class, 'destroy'])
+            ->name('dish_package.destroy');
     });
 });

@@ -12,102 +12,72 @@
         <button id="changeMonth" class="btn btn-secondary ml-2 mb-2">View</button>
     </div>
 
-    {{-- Working Hours --}}
-    <div class="d-flex mb-3 align-items-center flex-wrap">
-        <label for="working_hours" class="mr-2 mb-2">Working Hours per Day:</label>
-        <input type="number" id="working_hours" value="8" step="0.5" class="form-control w-25 mb-2">
-        <button id="apply_hours" class="btn btn-primary ml-2 mb-2">Apply</button>
-    </div>
+    @php
+        $joiningDate = \Carbon\Carbon::parse($staff->joining_date);
+        $selectedMonth = \Carbon\Carbon::create($year, $month, 1);
+    @endphp
 
-    {{-- Attendance Table --}}
-    <div class="table-responsive">
-        <table class="table table-bordered text-center">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Entry</th>
-                    <th>Exit</th>
-                    <th>Worked (hrs)</th>
-                    <th>Overtime (hrs)</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($attendances as $a)
-                    @php
-                        $worked = $a->entry_time && $a->exit_time
-                            ? \Carbon\Carbon::parse($a->entry_time)->diffInMinutes(\Carbon\Carbon::parse($a->exit_time)) / 60
-                            : 0;
-                    @endphp
-                    <tr class="day-row" data-id="{{ $a->id }}" data-worked="{{ $worked }}" data-status="{{ $a->status }}">
-                        <td>{{ \Carbon\Carbon::parse($a->date)->format('d M') }}</td>
-                        <td><input type="time" value="{{ $a->entry_time }}" class="form-control form-control-sm" disabled></td>
-                        <td><input type="time" value="{{ $a->exit_time }}" class="form-control form-control-sm" disabled></td>
-                        <td class="worked">{{ number_format($worked, 2) }}</td>
-                        <td class="overtime">—</td>
-                        <td>
-                            <select class="form-control form-control-sm" disabled>
-                                <option value="present" {{ $a->status=='present'?'selected':'' }}>Present</option>
-                                <option value="leave" {{ $a->status=='leave'?'selected':'' }}>Leave</option>
-                                <option value="absent" {{ $a->status=='absent'?'selected':'' }}>Absent</option>
-                            </select>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-info editRow">Edit</button>
-                            <button class="btn btn-sm btn-success saveRow d-none">Save</button>
-                            <button class="btn btn-sm btn-danger deleteRow">Delete</button>
-                        </td>
+    {{-- Check if joined after selected month --}}
+    @if($joiningDate->greaterThan($selectedMonth->endOfMonth()))
+        <div class="alert alert-warning text-center">
+            This staff member joined later — no attendance record found for this month.
+        </div>
+    @else
+
+        {{-- Attendance Table --}}
+        <div class="table-responsive">
+            <table class="table table-bordered text-center table-striped" id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th colspan="3">Totals</th>
-                    <th id="totalWorked">—</th>
-                    <th id="totalOvertime">—</th>
-                    <th colspan="2" id="totalSummary">—</th>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @forelse($attendances as $a)
+                        @php
+                            $isToday = $a->date == \Carbon\Carbon::today()->toDateString();
+                            $canEditToday = true;
+                            if($isToday && $a->created_at){
+                                $markedTime = \Carbon\Carbon::parse($a->created_at);
+                                $canEditToday = $markedTime->addHours(4)->isFuture();
+                            }
+                        @endphp
+                        <tr data-id="{{ $a->id }}" data-status="{{ $a->status }}">
+                            <td>{{ \Carbon\Carbon::parse($a->date)->format('d M') }}</td>
+                            <td>
+                                <div class="status-checkboxes" data-id="{{ $a->id }}">
+                                    <label><input type="checkbox" class="status-box" value="present" {{ $a->status=='present'?'checked':'' }} {{ !$canEditToday ? 'disabled' : '' }}> P</label>
+                                    <label><input type="checkbox" class="status-box" value="absent" {{ $a->status=='absent'?'checked':'' }} {{ !$canEditToday ? 'disabled' : '' }}> A</label>
+                                    <label><input type="checkbox" class="status-box" value="leave" {{ $a->status=='leave'?'checked':'' }} {{ !$canEditToday ? 'disabled' : '' }}> L</label>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger deleteRow">Delete</button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No attendance record found for this month.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" id="attendanceSummary">Totals: —</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+    @endif {{-- joining date check end --}}
 </div>
 
+{{-- SweetAlert2 --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-// Function to calculate totals
-function calculateTotals(){
-    const normal = parseFloat(document.getElementById('working_hours').value);
-    let totalWorked = 0, totalOver = 0, present=0, absent=0, leave=0, totalDays=0;
-
-    document.querySelectorAll('.day-row').forEach(row=>{
-        const worked = parseFloat(row.dataset.worked);
-        const overtime = Math.max(0, worked - normal);
-        row.querySelector('.overtime').textContent = overtime.toFixed(2);
-
-        totalWorked += worked;
-        totalOver += overtime;
-        totalDays++;
-
-        const status = row.dataset.status;
-        if(status=='present') present++;
-        else if(status=='absent') absent++;
-        else if(status=='leave') leave++;
-    });
-
-    document.getElementById('totalWorked').textContent = totalWorked.toFixed(2);
-    document.getElementById('totalOvertime').textContent = totalOver.toFixed(2);
-    document.getElementById('totalSummary').innerHTML = `
-        Total Days: ${totalDays} | Present: ${present} | Absent: ${absent} | Leave: ${leave}
-    `;
-}
-
-// Initial calculation
-calculateTotals();
-
-// Apply working hours button
-document.getElementById('apply_hours').addEventListener('click', calculateTotals);
-
-// Change Month button
 document.getElementById('changeMonth').addEventListener('click', ()=>{
     const selected = document.getElementById('selectMonth').value.split('-');
     const year = selected[0];
@@ -115,76 +85,106 @@ document.getElementById('changeMonth').addEventListener('click', ()=>{
     window.location.href = `{{ url('admin/attendence/view/'.$staff->id) }}?year=${year}&month=${month}`;
 });
 
-// Delegate row actions
-document.querySelector('tbody').addEventListener('click', async function(e){
-    const row = e.target.closest('tr');
-    if(!row) return;
-    const id = row.dataset.id;
-    const tds = row.querySelectorAll('td');
+function updateSummary(){
+    let total = 0, present = 0, absent = 0, leave = 0;
+    document.querySelectorAll('#attendanceTable tbody tr').forEach(row=>{
+        total++;
+        const status = row.dataset.status;
+        if(status=='present') present++;
+        else if(status=='absent') absent++;
+        else if(status=='leave') leave++;
+    });
+    document.getElementById('attendanceSummary').textContent =
+        `Totals: ${total} | Present: ${present} | Absent: ${absent} | Leave: ${leave}`;
+}
 
-    // Edit
-    if(e.target.classList.contains('editRow')){
-        row.querySelectorAll('input, select').forEach(inp => inp.disabled=false);
-        row.querySelector('.editRow').classList.add('d-none');
-        row.querySelector('.saveRow').classList.remove('d-none');
-    }
+updateSummary();
 
-    // Save
-    if(e.target.classList.contains('saveRow')){
-        const entry = tds[1].querySelector('input').value;
-        const exit  = tds[2].querySelector('input').value;
-        const status = tds[5].querySelector('select').value;
+document.querySelectorAll('.status-checkboxes').forEach(container => {
+    const checkboxes = container.querySelectorAll('.status-box');
+    checkboxes.forEach(box => {
+        box.addEventListener('change', () => {
+            checkboxes.forEach(b => { if(b !== box) b.checked = false; });
+            const id = container.dataset.id;
+            const status = box.checked ? box.value : '';
 
-        try{
-            const res = await fetch(`{{ url('admin/attendence/update') }}/${id}`,{
-                method:'POST',
-                headers:{
-                    'X-CSRF-TOKEN':'{{ csrf_token() }}',
-                    'Content-Type':'application/json',
-                    'Accept':'application/json'
-                },
-                body: JSON.stringify({entry_time: entry, exit_time: exit, status})
-            });
-            const data = await res.json();
-            alert(data.message);
-
-            const worked = entry && exit ? (new Date(`1970-01-01T${exit}Z`) - new Date(`1970-01-01T${entry}Z`))/3600000 : 0;
-            row.dataset.worked = worked;
+            const row = container.closest('tr');
             row.dataset.status = status;
-            tds[3].textContent = worked.toFixed(2);
 
-            row.querySelectorAll('input, select').forEach(inp => inp.disabled=true);
-            row.querySelector('.editRow').classList.remove('d-none');
-            row.querySelector('.saveRow').classList.add('d-none');
+            updateSummary();
 
-            calculateTotals();
-        }catch(err){
-            alert('Failed to update attendance');
-            console.error(err);
-        }
-    }
-
-    // Delete
-    if(e.target.classList.contains('deleteRow')){
-        if(!confirm('Are you sure you want to delete this attendance entry?')) return;
-        try{
-            const res = await fetch(`{{ url('admin/attendence/delete') }}/${id}`,{
-                method:'POST',
-                headers:{
-                    'X-CSRF-TOKEN':'{{ csrf_token() }}',
-                    'Content-Type':'application/json',
-                    'Accept':'application/json'
-                }
+            fetch('{{ route("attendence.update") }}/' + id, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status })
+            })
+            .then(res => res.json())
+            .then(data => {
+                Swal.fire({
+                    icon: data.status === 'success' ? 'success' : 'error',
+                    title: data.status === 'success' ? 'Updated!' : 'Error!',
+                    text: data.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             });
-            const data = await res.json();
-            alert(data.message);
-            row.remove();
-            calculateTotals();
-        }catch(err){
-            alert('Failed to delete attendance');
-            console.error(err);
-        }
-    }
+        });
+    });
+});
+
+document.querySelectorAll('.deleteRow').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+        const row = btn.closest('tr');
+        const id = row.dataset.id;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This attendance entry will be deleted permanently!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('{{ url("admin/attendence/delete") }}/' + id, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type':'application/json'
+                    }
+                })
+                .then(res=>res.json())
+                .then(data=>{
+                    Swal.fire({
+                        icon: data.status === 'success' ? 'success' : 'error',
+                        title: data.status === 'success' ? 'Deleted!' : 'Error!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    if(data.status === 'success'){
+                        row.remove();
+                        updateSummary();
+                    }
+                });
+            }
+        });
+    });
 });
 </script>
+
+<style>
+.status-checkboxes {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+.status-checkboxes input {
+    width:14px; height:14px; margin-right:2px;
+}
+</style>
 @endsection

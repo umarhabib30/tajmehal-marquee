@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('role', 50);
             $table->string('email', 100)->unique()->nullable();
             $table->string('phone', 20);
+            $table->string('idcardnumber', 15)->unique(); // removed ->after('phone')
             $table->string('address', 255)->nullable();
             $table->date('dob')->nullable();
             $table->enum('gender', ['Male', 'Female', 'Other'])->nullable();

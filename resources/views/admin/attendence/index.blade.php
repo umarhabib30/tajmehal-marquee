@@ -3,19 +3,21 @@
 
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <h5 class="card-header">
+        <div class="card shadow-sm">
+            <h5 class="card-header bg-primary text-white">
                 Attendance Management - {{ \Carbon\Carbon::create()->month($month)->format('F') }} {{ $year }}
             </h5>
             <div class="card-body">
 
-                <!-- Controls -->
-                <div class="mb-3 d-flex justify-content-between flex-wrap sticky-controls bg-white" style="top:0; z-index:4;">
+                <!-- Month/Year Controls -->
+                <div class="mb-3 d-flex justify-content-between flex-wrap sticky-controls bg-white p-2 shadow-sm rounded">
                     <div>
                         <label>Select Month:</label>
                         <select id="selectMonth" class="form-control d-inline-block w-auto">
                             @for($m = 1; $m <= 12; $m++)
-                                <option value="{{ $m }}" {{ $m==$month?'selected':'' }}>{{ \Carbon\Carbon::create()->month($m)->format('F') }}</option>
+                                <option value="{{ $m }}" {{ $m==$month?'selected':'' }}>
+                                    {{ \Carbon\Carbon::create()->month($m)->format('F') }}
+                                </option>
                             @endfor
                         </select>
 
@@ -29,19 +31,14 @@
                         <button id="changeMonth" class="btn btn-primary btn-sm">Go</button>
                         <button id="thisMonth" class="btn btn-secondary btn-sm">This Month</button>
                     </div>
-
-                    <div>
-                        <button id="applyLeave" class="btn btn-warning">Mark Leave</button>
-                        <button id="saveAttendance" class="btn btn-success">Save Attendance</button>
-                    </div>
                 </div>
 
                 <!-- Attendance Table -->
-                <div class="table-responsive" style="max-height:600px; overflow:auto;">
-                    <table class="table table-striped table-bordered text-center table-sm mb-0">
-                        <thead>
+                <div class="table-responsive">
+                    <table id="attendanceTable" class="table table-striped table-bordered text-center table-sm align-middle">
+                        <thead class="bg-light">
                             <tr>
-                                <th class="sticky-col bg-white" style="left:0; z-index:3;">Staff Name</th>
+                                <th class="sticky-col bg-white">Staff Name</th>
                                 @for($i = 1; $i <= $monthDays; $i++)
                                     <th class="sticky-header bg-white">{{ $i }}</th>
                                 @endfor
@@ -51,19 +48,32 @@
                         <tbody>
                             @foreach($staff as $s)
                                 <tr>
-                                    <td class="sticky-col bg-white" style="left:0; z-index:2;">{{ $s->name }}</td>
+                                    <td class="sticky-col bg-white text-truncate" style="max-width:150px;">{{ $s->name }}</td>
                                     @for($i = 1; $i <= $monthDays; $i++)
                                         @php
                                             $date = \Carbon\Carbon::create($year, $month, $i)->toDateString();
                                             $record = $attendances->where('staff_id', $s->id)->where('date', $date)->first();
-                                            $entryColor = $record && $record->entry_time ? 'lightblue' : 'white';
-                                            $exitColor  = $record && $record->exit_time  ? 'red' : 'white';
-                                            $leaveColor = $record && $record->status=='leave' ? 'yellow' : null;
+                                            $status = $record ? $record->status : '';
+
+                                            $isToday = $date === \Carbon\Carbon::today()->toDateString();
+                                            $canEditToday = true;
+                                            if($isToday && $record){
+                                                $markedTime = \Carbon\Carbon::parse($record->created_at);
+                                                $canEditToday = $markedTime->addHours(4)->isFuture();
+                                            }
+
+                                            // ✅ Joining date check
+                                            $joiningDate = $s->joining_date ? \Carbon\Carbon::parse($s->joining_date)->toDateString() : null;
+                                            $beforeJoining = $joiningDate && $date < $joiningDate;
                                         @endphp
-                                        <td>
-                                            <div class="day-box-wrapper">
-                                                <div class="day-box entry" data-staff="{{ $s->id }}" data-date="{{ $date }}" style="background: {{ $leaveColor ?? $entryColor }}"></div>
-                                                <div class="day-box exit" data-staff="{{ $s->id }}" data-date="{{ $date }}" style="background: {{ $leaveColor ?? $exitColor }}"></div>
+                                        <td class="{{ $beforeJoining ? 'disabled-cell' : '' }}" title="{{ $beforeJoining ? 'Joined after this date' : '' }}">
+                                            <div class="status-checkboxes" 
+                                                 data-staff="{{ $s->id }}" 
+                                                 data-date="{{ $date }}" 
+                                                 data-joining="{{ $joiningDate }}">
+                                                <label><input type="checkbox" class="status-box" value="present" {{ $status=='present' ? 'checked' : '' }} {{ (!$canEditToday || $beforeJoining) ? 'disabled' : '' }}> P</label>
+                                                <label><input type="checkbox" class="status-box" value="absent"  {{ $status=='absent'  ? 'checked' : '' }} {{ (!$canEditToday || $beforeJoining) ? 'disabled' : '' }}> A</label>
+                                                <label><input type="checkbox" class="status-box" value="leave"   {{ $status=='leave'   ? 'checked' : '' }} {{ (!$canEditToday || $beforeJoining) ? 'disabled' : '' }}> L</label>
                                             </div>
                                         </td>
                                     @endfor
@@ -81,38 +91,12 @@
     </div>
 </div>
 
-<!-- Leave Modal -->
-<div class="modal" tabindex="-1" role="dialog" id="leaveModal">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Mark Leave</h5>
-                <button type="button" class="close" onclick="document.getElementById('leaveModal').style.display='none'">&times;</button>
-            </div>
-            <div class="modal-body">
-                <label>Staff:</label>
-                <select id="leaveStaff" class="form-control">
-                    @foreach($staff as $s)
-                        <option value="{{ $s->id }}">{{ $s->name }}</option>
-                    @endforeach
-                </select>
-                <label>Leave From:</label>
-                <input type="date" id="leaveStart" class="form-control" value="{{ $date }}">
-                <label>Leave To:</label>
-                <input type="date" id="leaveEnd" class="form-control" value="{{ $date }}">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="confirmLeave">Mark Leave</button>
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('leaveModal').style.display='none'">Cancel</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Toastr CSS & JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
+<!-- Scripts -->
 <script>
-let attendanceData = {}; // only track clicked boxes
-
-// Month/year navigation
 document.getElementById('changeMonth').addEventListener('click', () => {
     const month = document.getElementById('selectMonth').value;
     const year = document.getElementById('selectYear').value;
@@ -123,80 +107,97 @@ document.getElementById('thisMonth').addEventListener('click', () => {
     window.location.href = `?month=${now.getMonth()+1}&year=${now.getFullYear()}`;
 });
 
-// Entry/Exit click
-document.querySelectorAll('.day-box-wrapper .day-box').forEach(box => {
-    box.addEventListener('click', () => {
-        let staff = box.dataset.staff;
-        let date  = box.dataset.date;
-        let type  = box.classList.contains('entry') ? 'entry' : 'exit';
+// ✅ Attendance marking with joining date restriction + Toastr alerts
+document.querySelectorAll('.status-checkboxes').forEach(container => {
+    const checkboxes = container.querySelectorAll('.status-box');
+    const joiningDate = container.dataset.joining;
 
-        // Toggle color
-        if(type==='entry') box.style.background = 'lightblue';
-        else box.style.background = 'red';
+    checkboxes.forEach(box => {
+        box.addEventListener('change', () => {
+            const staff_id = container.dataset.staff;
+            const date = container.dataset.date;
+            const status = box.checked ? box.value : '';
 
-        // Track only user actions
-        attendanceData[staff] = attendanceData[staff] || {};
-        attendanceData[staff][date] = attendanceData[staff][date] || {};
-        attendanceData[staff][date][type] = true;
+            // Check joining date restriction
+            if (joiningDate && date < joiningDate) {
+                toastr.warning('Cannot mark attendance — staff joined later.', 'Warning');
+                box.checked = false;
+                return;
+            }
+
+            // Allow only one checked box
+            checkboxes.forEach(b => { if(b !== box) b.checked = false; });
+
+            // Send update to server
+            fetch('{{ route("attendence.updateStatus") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ staff_id, date, status })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'error'){
+                    toastr.error(data.message, 'Error');
+                    box.checked = false;
+                } else {
+                    toastr.success('Attendance saved successfully!', 'Success');
+                }
+            })
+            .catch(() => toastr.error('Something went wrong', 'Error'));
+        });
     });
 });
 
-// Save Attendance
-document.getElementById('saveAttendance').addEventListener('click', () => {
-    for(let staff in attendanceData){
-        for(let date in attendanceData[staff]){
-            let data = attendanceData[staff][date];
-            if(data.entry) sendMark('entry', staff, date);
-            if(data.exit) sendMark('exit', staff, date);
-        }
-    }
-    alert('Attendance saved!');
+// Initialize DataTable with scroll and sticky header
+$(document).ready(function(){
+    $('#attendanceTable').DataTable({
+        scrollX: true,
+        scrollY: '500px',
+        scrollCollapse: true,
+        paging: false,
+        searching: false,
+        ordering: false,
+        info: false,
+        fixedHeader: true
+    });
 });
-
-// Open Leave Modal
-document.getElementById('applyLeave').addEventListener('click', () => {
-    document.getElementById('leaveModal').style.display='block';
-});
-
-// Mark Leave
-document.getElementById('confirmLeave').addEventListener('click', () => {
-    let staff = document.getElementById('leaveStaff').value;
-    let start = new Date(document.getElementById('leaveStart').value);
-    let end   = new Date(document.getElementById('leaveEnd').value);
-
-    for(let d = start; d <= end; d.setDate(d.getDate() + 1)){
-        let dateStr = d.toISOString().slice(0,10);
-        sendMark('leave', staff, dateStr); // only mark leave
-    }
-
-    document.getElementById('leaveModal').style.display='none';
-    location.reload();
-});
-
-// AJAX send
-function sendMark(type, staff_id, date){
-    let url = type==='entry' ? '{{ route("attendence.markEntry") }}' :
-              type==='exit' ? '{{ route("attendence.markExit") }}' :
-              '{{ route("attendence.markLeave") }}';
-    
-    fetch(url,{
-        method:'POST',
-        headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}','Content-Type':'application/json'},
-        body: JSON.stringify({ staff_id, date })
-    }).then(res=>res.json())
-      .then(data=>console.log(data.message))
-      .catch(err=>console.error(err));
-}
 </script>
 
 <style>
-.table-responsive { overflow:auto; max-height:600px; }
+.table-responsive { overflow:auto; }
 .sticky-col { position: sticky; left: 0; background: #fff; z-index: 2; }
 thead .sticky-col { z-index: 3; }
 .sticky-header { position: sticky; top: 0; background: #fff; z-index: 3; }
-.sticky-controls { position: sticky; top:0; }
-.day-box-wrapper { display:flex; justify-content:center; }
-.day-box { width:20px; height:20px; margin:1px; border:1px solid #ccc; cursor:pointer; }
+.sticky-controls { position: sticky; top:0; z-index: 4; background:#fff; padding:5px; }
+
+.status-checkboxes {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+.status-checkboxes label {
+    font-size: 12px;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+.status-checkboxes input {
+    margin-right: 2px;
+    width: 14px;
+    height: 14px;
+}
+.text-truncate {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.disabled-cell {
+    background-color: #f2f2f2;
+    opacity: 0.6;
+    pointer-events: none;
+}
 </style>
 
 @endsection

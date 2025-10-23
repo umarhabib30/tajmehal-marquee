@@ -10,6 +10,7 @@ use Carbon\Carbon;
 
 class AttendenceController extends Controller
 {
+    // List attendance
     public function index(Request $request)
     {
         $month = $request->get('month', Carbon::now()->month);
@@ -22,116 +23,123 @@ class AttendenceController extends Controller
             ->whereMonth('date', $month)
             ->get();
 
-        return view('admin.attendence.index', [
-            'staff' => $staff,
+        $data = [
+            'staff'       => $staff,
             'attendances' => $attendances,
-            'month' => $month,
-            'year' => $year,
-            'monthDays' => $monthDays,
-            'date' => $date,
-            'active' => 'attendence',
-            'heading' => 'Attendance Management',
-            'title' => 'Staff Attendance',
-        ]);
+            'month'       => $month,
+            'year'        => $year,
+            'monthDays'   => $monthDays,
+            'date'        => $date,
+            'active'      => 'attendence',
+            'heading'     => 'Attendance Management',
+            'title'       => 'Staff Attendance',
+        ];
+
+        return view('admin.attendence.index', $data);
     }
 
-
-    public function update(Request $request, $id)
+    // Upsert attendance status (for checkboxes)
+    public function updateStatus(Request $request)
     {
         $request->validate([
-            'entry_time' => 'nullable|date_format:H:i:s',
-            'exit_time'  => 'nullable|date_format:H:i:s',
-            'status'     => 'required|in:present,leave,absent',
+            'staff_id' => 'required|exists:staff,id',
+            'date'     => 'required|date',
+            'status'   => 'required|in:present,absent,leave',
         ]);
 
-        $attendance = Attendence::findOrFail($id);
-        $attendance->entry_time = $request->entry_time ?: null;
-        $attendance->exit_time  = $request->exit_time ?: null;
-        $attendance->status     = $request->status;
-        $attendance->save();
+        $staff_id = $request->staff_id;
+        $date     = $request->date;
+        $status   = $request->status;
 
-        $worked = $attendance->entry_time && $attendance->exit_time
-            ? Carbon::parse($attendance->entry_time)
-            ->diffInMinutes(Carbon::parse($attendance->exit_time)) / 60
-            : 0;
+        // Check 4-hour restriction if marking today
+        if ($date === Carbon::today()->toDateString()) {
+            $attendance = Attendence::where('staff_id', $staff_id)
+                ->where('date', $date)
+                ->first();
+
+            if ($attendance && Carbon::parse($attendance->created_at)->addHours(4)->isPast()) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'You can no longer change today\'s attendance after 4 hours.',
+                ]);
+            }
+        }
+
+        Attendence::updateOrCreate(
+            ['staff_id' => $staff_id, 'date' => $date],
+            ['status' => $status]
+        );
 
         return response()->json([
-            'status' => 'success',
-            'message' => 'Attendance updated successfully!',
-            'worked' => $worked
+            'status'  => 'success',
+            'message' => 'Attendance updated successfully.',
         ]);
     }
 
+    // Store new attendance (optional)
     public function store(Request $request)
     {
-        $attendance = new Attendence();
-        $attendance->staff_id = $request->staff_id;
-        $attendance->date = $request->date;
-        $attendance->entry_time = $request->entry_time;
-        $attendance->exit_time = $request->exit_time;
-        $attendance->status = $request->status;
-        $attendance->save();
+        $request->validate([
+            'staff_id' => 'required|exists:staff,id',
+            'date'     => 'required|date',
+            'status'   => 'required|in:present,absent,leave',
+        ]);
 
-        return response()->json(['status' => 'success', 'message' => 'Attendance created!']);
+        Attendence::create([
+            'staff_id' => $request->staff_id,
+            'date'     => $request->date,
+            'status'   => $request->status,
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Attendance created successfully.',
+        ]);
     }
 
-    public function delete(Request $request, $id)
+    // Delete attendance
+    public function delete($id)
     {
         $attendance = Attendence::find($id);
+
         if (!$attendance) {
-            return response()->json(['status' => 'error', 'message' => 'Attendance not found']);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Attendance not found.',
+            ]);
         }
+
         $attendance->delete();
-        return response()->json(['status' => 'success', 'message' => 'Attendance deleted!']);
-    }
 
-    public function markEntry(Request $request)
-    {
-        $attendance = Attendence::firstOrNew([
-            'staff_id' => $request->staff_id,
-            'date' => $request->date ?? Carbon::today()->toDateString(),
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Attendance deleted successfully.',
         ]);
-
-        $attendance->entry_time = $request->time ?? Carbon::now()->format('H:i:s');
-        $attendance->status = 'present';
-        $attendance->save();
-
-        return response()->json(['status' => 'success', 'message' => 'Entry time saved']);
     }
 
-    public function markExit(Request $request)
-    {
-        $attendance = Attendence::firstOrNew([
-            'staff_id' => $request->staff_id,
-            'date' => $request->date ?? Carbon::today()->toDateString(),
-        ]);
-
-        $attendance->exit_time = $request->time ?? Carbon::now()->format('H:i:s');
-        $attendance->status = 'present';
-        $attendance->save();
-
-        return response()->json(['status' => 'success', 'message' => 'Exit time saved']);
-    }
-
+    // Mark leave via modal (optional)
     public function markLeave(Request $request)
-{
-    $staff_id = $request->staff_id;
-    $date = $request->date ?? Carbon::today()->toDateString();
-    $reason = $request->reason ?? null;
+    {
+        $staff_id = $request->staff_id;
+        $date     = $request->date ?? Carbon::today()->toDateString();
+        $reason   = $request->reason ?? null;
 
-    // Keep existing entry/exit, just update status
-    $attendance = Attendence::firstOrNew([
-        'staff_id' => $staff_id,
-        'date' => $date
-    ]);
+        $attendance = Attendence::firstOrNew([
+            'staff_id' => $staff_id,
+            'date'     => $date,
+        ]);
 
-    $attendance->status = 'leave';
-    if ($reason) $attendance->reason = $reason;
-    $attendance->save();
+        $attendance->status = 'leave';
+        if ($reason) $attendance->reason = $reason;
+        $attendance->save();
 
-    return response()->json(['status' => 'success', 'message' => 'Leave recorded']);
-}
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Leave recorded successfully.',
+        ]);
+    }
 
+    // View individual staff monthly report
     public function view($id, Request $request)
     {
         $month = $request->get('month', Carbon::now()->month);
@@ -144,14 +152,16 @@ class AttendenceController extends Controller
             ->orderBy('date')
             ->get();
 
-        return view('admin.attendence.view', [
-            'staff' => $staff,
+        $data = [
+            'staff'       => $staff,
             'attendances' => $attendances,
-            'month' => $month,
-            'year' => $year,
-            'active' => 'attendence',
-            'heading' => 'View Attendance Report',
-            'title' => 'Monthly Summary',
-        ]);
+            'month'       => $month,
+            'year'        => $year,
+            'active'      => 'attendence',
+            'heading'     => 'View Attendance Report',
+            'title'       => 'Monthly Summary',
+        ];
+
+        return view('admin.attendence.view', $data);
     }
 }

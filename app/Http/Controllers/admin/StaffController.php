@@ -13,35 +13,41 @@ class StaffController extends Controller
     public function index()
     {
         $staff = Staff::all();
-        return view('admin.staff.index', [
+
+        $data = [
             'heading' => 'Staff Management',
             'title'   => 'View Staff',
             'active'  => 'staff',
             'staff'   => $staff,
-        ]);
+        ];
+
+        return view('admin.staff.index', $data);
     }
 
     // Show form to create new staff
     public function create()
     {
-        return view('admin.staff.create', [
+        $data = [
             'heading' => 'Staff Management',
             'title'   => 'Add New Staff',
             'active'  => 'staff',
-        ]);
+        ];
+
+        return view('admin.staff.create', $data);
     }
 
     // Store staff
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'        => 'required|string|max:100',
-            'role'        => 'required|string|max:50',
-            'email'       => 'nullable|email|unique:staff,email',
-            'phone'       => ['required', 'regex:/^\d{11}$/'],
-            'salary'      => 'nullable|numeric',
-            'experience'  => 'nullable|integer|min:0',
-            'status'      => 'nullable|string',
+            'name'         => 'required|string|max:100',
+            'role'         => 'required|string|max:50',
+            'email'        => 'nullable|email|unique:staff,email',
+            'phone'        => ['required', 'regex:/^\d{11}$/'],
+            'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:staff,idcardnumber'],
+            'salary'       => 'nullable|numeric',
+            'experience'   => 'nullable|integer|min:0',
+            'status'       => 'nullable|string',
             'joining_date' => 'nullable|date',
         ]);
 
@@ -49,7 +55,7 @@ class StaffController extends Controller
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
-                ->with('error', 'This email is already taken or invalid input provided.');
+                ->with('error', 'Invalid input or email/id card already taken.');
         }
 
         Staff::create($request->all());
@@ -62,26 +68,29 @@ class StaffController extends Controller
     {
         $staff = Staff::findOrFail($id);
 
-        return view('admin.staff.edit', [
+        $data = [
             'heading' => 'Staff Management',
             'title'   => 'Edit Staff',
             'active'  => 'staff',
             'staff'   => $staff,
-        ]);
+        ];
+
+        return view('admin.staff.edit', $data);
     }
 
     // Update staff
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id'          => 'required|exists:staff,id',
-            'name'        => 'required|string|max:100',
-            'role'        => 'required|string|max:50',
-            'email'       => 'nullable|email|unique:staff,email,' . $request->id,
-            'phone'       => ['required', 'regex:/^\d{11}$/'],
-            'salary'      => 'nullable|numeric',
-            'experience'  => 'nullable|integer|min:0',
-            'status'      => 'nullable|string',
+            'id'           => 'required|exists:staff,id',
+            'name'         => 'required|string|max:100',
+            'role'         => 'required|string|max:50',
+            'email'        => 'nullable|email|unique:staff,email,' . $request->id,
+            'phone'        => ['required', 'regex:/^\d{11}$/'],
+            'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:staff,idcardnumber,' . $request->id],
+            'salary'       => 'nullable|numeric',
+            'experience'   => 'nullable|integer|min:0',
+            'status'       => 'nullable|string',
             'joining_date' => 'nullable|date',
         ]);
 
@@ -89,7 +98,7 @@ class StaffController extends Controller
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
-                ->with('error', 'This email is already taken or invalid input provided.');
+                ->with('error', 'Invalid input or email/id card already taken.');
         }
 
         $staff = Staff::findOrFail($request->id);

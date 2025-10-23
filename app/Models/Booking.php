@@ -9,33 +9,44 @@ class Booking extends Model
 {
     use HasFactory;
     protected $fillable = [
-      
-    'customer_id',
-    'event_type',
-    'guests_count',
-    'booking_date',
-    'start_date',
-    'end_date',
-    'booking_time',
-    'time_slot',
-    'hall_name',
-    'decoration_type',
-    'menu_package',
-    'total_amount',
-    'discount_percent',
-    'advance_payment',
-    'remaining_amount',
-    'payment_status',
-    'status',
-    'special_request',
-        'customer_signature', 
-];
+        'customer_id',
+        'event_type',
+        'hall_name',
+        'booking_date',
+        'time_slot',
+        'start_time',
+        'end_time',
+        'dish_package_id',
+        'decoration',
+        'decoration_amount',
+        'guests_count',
+        'price_per_head',
+        'tax',
+        'total_amount',
+        'remaining_amount',
+        'customer_signature',
+        'manager_signature',
+        'notes'
+    ];
 
-   
+    protected $casts = [
+        'booking_date' => 'date',
+        'start_time' => 'datetime:H:i',
+        'end_time' => 'datetime:H:i',
+        'total_amount' => 'decimal:2',
+        'remaining_amount' => 'decimal:2',
+        'price_per_head' => 'decimal:2',
+        'tax' => 'decimal:2',
+        'decoration_amount' => 'decimal:2',
+    ];
 
     public function customer()
     {
         return $this->belongsTo(Customer::class);
     }
-   
+
+    public function dishPackage()
+    {
+        return $this->belongsTo(DishPackage::class);
+    }
 }

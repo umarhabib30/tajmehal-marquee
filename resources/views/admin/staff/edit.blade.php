@@ -11,7 +11,6 @@
                 <form action="{{ route('staff.update') }}" method="POST">
                     @csrf
                     <input type="hidden" name="id" value="{{ $staff->id }}">
-
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label>Name</label>
@@ -27,7 +26,12 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Phone</label>
-                            <input type="text" name="phone" class="form-control" value="{{ $staff->phone }}" required>
+                            <input type="text" name="phone" class="form-control" maxlength="11" value="{{ $staff->phone }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>ID Card Number</label>
+                            <input id="idcardnumber" name="idcardnumber" type="text" class="form-control"
+                                   placeholder="xxxxx-xxxxxxx-x" maxlength="15" value="{{ $staff->idcardnumber }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Salary</label>
@@ -70,4 +74,26 @@
 <script>toastr.error("{{ $errors->first() }}");</script>
 @endif
 
+@endsection
+
+@section('script')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const phoneEl = document.querySelector('input[name="phone"]');
+    phoneEl.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g,'').slice(0,11);
+    });
+
+    const idEl = document.getElementById('idcardnumber');
+    idEl.addEventListener('input', function() {
+        let v = this.value.replace(/\D/g, '');
+        if(v.length > 5 && v.length <= 12) {
+            v = v.slice(0,5) + '-' + v.slice(5);
+        } else if(v.length > 12) {
+            v = v.slice(0,5) + '-' + v.slice(5,12) + '-' + v.slice(12,13);
+        }
+        this.value = v;
+    });
+});
+</script>
 @endsection

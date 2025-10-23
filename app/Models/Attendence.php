@@ -14,9 +14,7 @@ class Attendence extends Model
     protected $fillable = [
         'staff_id',
         'date',
-        'entry_time',
-        'exit_time',
-        'status',
+        'status', // removed entry_time and exit_time
     ];
 
     public function staff()

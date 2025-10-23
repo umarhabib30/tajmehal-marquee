@@ -13,6 +13,7 @@ class Staff extends Model
         'role',
         'email',
         'phone',
+        'idcardnumber', // added
         'address',
         'dob',
         'gender',
