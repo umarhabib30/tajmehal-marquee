@@ -44,7 +44,7 @@ class StaffController extends Controller
             'role'         => 'required|string|max:50',
             'email'        => 'nullable|email',
             'phone'        => ['required', 'regex:/^\d{11}$/'],
-            'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:staff,idcardnumber'],
+            'idcardnumber' => ['regex:/^\d{5}-\d{7}-\d{1}$/'],
             'salary'       => 'nullable|numeric',
             'experience'   => 'nullable|integer|min:0',
             'status'       => 'nullable|string',
