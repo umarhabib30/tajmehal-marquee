@@ -14,7 +14,7 @@ class DishController extends Controller
         $data = [
             'heading' => 'Dish',
             'title'   => 'View Dish',
-            'active'  => 'dish',
+            'active'  => 'dishes',
             'values'  => $values,
         ];
         return view('admin.dishes.index', $data);
@@ -24,8 +24,8 @@ class DishController extends Controller
     {
         $data = [
             'heading' => 'Dish',
-            'title'   => 'Enter Dish',
-            'active'  => 'dish'
+            'title'   => 'Add Dish',
+            'active'  => 'dishes'
         ];
         return view('admin.dishes.create', $data);
     }
@@ -34,7 +34,6 @@ class DishController extends Controller
     {
         $request->validate([
             'name'           => 'required|string|max:255',
-            'price_per_head' => 'required|numeric|min:0',
         ]);
 
         // ✅ Check if dish with same name already exists
@@ -47,12 +46,9 @@ class DishController extends Controller
 
         Dish::create([
             'name'           => $request->name,
-            'price_per_head' => $request->price_per_head,
         ]);
 
-        return redirect()
-            ->route('dishes.index')
-            ->with('success', 'Dish created successfully!');
+        return redirect()->back()->with('success', 'Dish added successfully!');
     }
 
     public function show(string $id)
@@ -66,7 +62,7 @@ class DishController extends Controller
         $data = [
             'heading' => 'Dish',
             'title'   => 'Edit Dish',
-            'active'  => 'dish',
+            'active'  => 'dishes',
             'dish'    => $dish,
         ];
         return view('admin.dishes.edit', $data);
@@ -76,14 +72,12 @@ class DishController extends Controller
     {
         $request->validate([
             'name'           => 'required|string|max:255|unique:dishes,name,' . $request->id,
-            'price_per_head' => 'required|numeric|min:0',
         ]);
 
         $dish = Dish::findOrFail($request->id);
 
         $dish->update([
             'name'           => $request->name,
-            'price_per_head' => $request->price_per_head,
         ]);
 
         return redirect()

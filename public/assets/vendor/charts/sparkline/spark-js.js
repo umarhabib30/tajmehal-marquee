@@ -7,7 +7,7 @@
                 height: '50',
                 barWidth: 10,
                 barSpacing: 4,
-                barColor: '#5969ff'
+                barColor: '#29166f '
 
             });
 
@@ -23,7 +23,7 @@
                 spotColor: '#ff407b',
                 minSpotColor: '#ff407b',
                 maxSpotColor: '#ff407b',
-                lineColor: '#5969ff',
+                lineColor: '#29166f ',
                  lineWidth:'2'
             });
 
@@ -83,7 +83,7 @@
         if ($('#sparkline5').length) {
             $("#sparkline5").sparkline([10, 12, 12, 9, 7], {
                 type: 'bullet',
-                targetColor: '#5969ff',
+                targetColor: '#29166f ',
                 performanceColor: '#ff407b',
                   height: '50',
                   width:'180',
@@ -96,7 +96,7 @@
         if ($('#sparkline6').length) {
             $("#sparkline6").sparkline([1, 1, 2], {
                
-                sliceColors: ['#ff407b', '#5969ff #5969ff', '#5969ff', '#ff407b', '#ff407b'],
+                sliceColors: ['#ff407b', '#29166f  #29166f ', '#29166f ', '#ff407b', '#ff407b'],
                 type: 'pie',
             height: '50',
             resize: true
@@ -110,7 +110,7 @@
         if ($('#sparkline7').length) {
             $("#sparkline7").sparkline([4, 27, 34, 52, 54, 59, 61, 68, 78, 82, 85, 87, 91, 93, 100], {
                 type: 'box',
-                boxFillColor: '#5969ff',
+                boxFillColor: '#29166f ',
                 medianColor: '#ff407b',
                 targetColor: '#ff407b',
                 height:'50',

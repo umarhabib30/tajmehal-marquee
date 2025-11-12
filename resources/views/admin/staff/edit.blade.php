@@ -4,10 +4,8 @@
 <div class="row">
     <div class="col-xl-12">
         <div class="card">
-            <h5 class="card-header">{{ $heading }} - {{ $title }}</h5>
+            <h5 class="card-header">Edit Staff</h5>
             <div class="card-body">
-                <a href="{{ route('staff.index') }}" class="btn btn-secondary mb-3">Back</a>
-
                 <form action="{{ route('staff.update') }}" method="POST">
                     @csrf
                     <input type="hidden" name="id" value="{{ $staff->id }}">
@@ -18,7 +16,13 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Role</label>
-                            <input type="text" name="role" class="form-control" value="{{ $staff->role }}" required>
+                             <select name="role" id="" class="form-control">
+                                <option value="Manager" @if ($staff->role == 'Manager') selected @endif>Manager</option>
+                                <option value="Waiter" @if ($staff->role == 'Waiter') selected @endif>Waiter</option>
+                                <option value="Chef" @if ($staff->role == 'Chef') selected @endif>Chef</option>
+                                <option value="Cleaner" @if ($staff->role == 'Cleaner') selected @endif>Cleaner</option>
+                                <option value="Security" @if ($staff->role == 'Security') selected @endif>Security</option>
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Email</label>

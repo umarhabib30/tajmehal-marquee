@@ -3,40 +3,8 @@
     <div class="row">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="card">
-                <h5 class="card-header">Inventory Table</h5>
+                <h5 class="card-header">Crockery Inventory</h5>
                 <div class="card-body">
-
-                    {{-- Success Message --}}
-                    @if (session('success'))
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success',
-                                    text: '{{ session('success') }}',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                });
-                            });
-                        </script>
-                    @endif
-
-                    {{-- Add New Item --}}
-                    <a href="{{ route('inventory.create') }}" class="btn btn-success mb-3">Add New Item</a>
-
-                    {{-- Category Filter --}}
-                    <form method="GET" action="{{ route('inventory.index') }}" class="mb-3">
-                        <div class="form-group w-25">
-                            <select name="category" onchange="this.form.submit()" class="form-control">
-                                <option value="">All Categories</option>
-                                <option value="Food" {{ request('category') == 'Food' ? 'selected' : '' }}>Food</option>
-                                <option value="Electronics" {{ request('category') == 'Electronics' ? 'selected' : '' }}>Electronics</option>
-                                <option value="Furniture" {{ request('category') == 'Furniture' ? 'selected' : '' }}>Furniture</option>
-                                <option value="Decoration" {{ request('category') == 'Decoration' ? 'selected' : '' }}>Decoration</option>
-                                <option value="Crockery" {{ request('category') == 'Crockery' ? 'selected' : '' }}>Crockery</option>
-                            </select>
-                        </div>
-                    </form>
 
                     {{-- Inventory Table --}}
                     <div class="table-responsive">
@@ -48,6 +16,7 @@
                                     <th>Category</th>
                                     <th>Quantity</th>
                                     <th>Quantity Type</th>
+                                    <th>Supplier</th>
                                     <th>Stock</th>
                                     <th>Edit</th>
                                     <th>Delete</th>
@@ -61,11 +30,14 @@
                                         <td>{{ $inv->category }}</td>
                                         <td>{{ $inv->quantity }}</td>
                                         <td>{{ $inv->quantity_type }}</td>
+                                        <td>{{ $inv->supplier_name ?? '-' }}</td>
                                         <td>
-                                            <a href="{{ route('inventory.stock', $inv->id) }}" class="btn btn-info btn-sm">Stock</a>
+                                            <a href="{{ route('inventory.stock', $inv->id) }}"
+                                               class="btn btn-primary btn-sm">Stock</a>
                                         </td>
                                         <td>
-                                            <a href="{{ route('inventory.edit', $inv->id) }}" class="btn btn-primary btn-sm">Edit</a>
+                                            <a href="{{ route('inventory.edit', $inv->id) }}"
+                                               class="btn btn-primary btn-sm">Edit</a>
                                         </td>
                                         <td>
                                             <form id="delete-form-{{ $inv->id }}"
@@ -86,7 +58,7 @@
 
                                 @if ($inventories->isEmpty())
                                     <tr>
-                                        <td colspan="10" class="text-center">No inventory items found.</td>
+                                        <td colspan="9" class="text-center">No crockery inventory items found.</td>
                                     </tr>
                                 @endif
                             </tbody>
@@ -100,10 +72,14 @@
 @endsection
 
 @section('script')
+    {{-- Include SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Attach click event to delete buttons
             const deleteButtons = document.querySelectorAll('.delete-btn');
+
             deleteButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const itemId = this.getAttribute('data-id');

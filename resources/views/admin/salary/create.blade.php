@@ -44,8 +44,8 @@
         </div>
 
         <div class="d-flex flex-column flex-sm-row gap-2 mt-3">
-            <button type="submit" class="btn btn-success flex-fill">Generate Salary</button>
-            <a href="{{ route('admin.salary.index') }}" class="btn btn-secondary flex-fill">Cancel</a>
+            <button type="submit" class="btn btn-success ">Generate Salary</button>
+            <a href="{{ route('admin.salary.index') }}" class="btn btn-primary  ">Cancel</a>
         </div>
     </form>
 </div>

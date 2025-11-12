@@ -37,7 +37,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-
+    @yield('style')
 
     <title>{{ $title }}</title>
 
@@ -199,6 +199,38 @@
                                         class="fa fa-fw fa-user-circle"></i>Dashboard
                                     <span class="badge badge-success">6</span></a>
                             </li>
+                            {{-- for customer --}}
+                            <li class="nav-item">
+                                <a class="nav-link @if ($active == 'customers') active @endif" href="#"
+                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-customers"
+                                    aria-controls="submenu-customers">
+                                    <i class="fa fa-fw fa-users"></i> Customers
+                                </a>
+                                <div id="submenu-customers" class="collapse submenu">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ url('admin/customer/index') }}">View All</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ url('admin/customer/create') }}">Add</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            {{-- for booking --}}
+                            <li class="nav-item">
+                                <a class="nav-link @if ($active == 'booking') active @endif" href="#"
+                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-booking"
+                                    aria-controls="submenu-booking">
+                                    <i class="fa fa-fw fa-calendar-check"></i> Booking
+                                </a>
+                                <div id="submenu-booking" class="collapse submenu">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('admin.booking.index') }}">View All</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('admin.booking.create') }}">Add New</a></li>
+                                    </ul>
+                                </div>
+                            </li>
                             {{-- for dishes --}}
                             <li class="nav-item">
                                 <a class="nav-link @if ($active == 'dishes') active @endif" href="#"
@@ -234,22 +266,28 @@
                                     </ul>
                                 </div>
                             </li>
-                            {{-- for customer --}}
+
+
+                            {{-- for inventory --}}
                             <li class="nav-item">
-                                <a class="nav-link @if ($active == 'customers') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-customers"
-                                    aria-controls="submenu-customers">
-                                    <i class="fa fa-fw fa-users"></i> Customers
+                                <a class="nav-link @if ($active == 'inventory') active @endif" href="#"
+                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-inventory"
+                                    aria-controls="submenu-inventory">
+                                    <i class="fa fa-fw fa-boxes"></i> Inventory
                                 </a>
-                                <div id="submenu-customers" class="collapse submenu">
+                                <div id="submenu-inventory" class="collapse submenu">
                                     <ul class="nav flex-column">
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ url('admin/customer/index') }}">View All</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ url('admin/customer/create') }}">Add</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.create') }}">Add New</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.index') }}">All Items</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.food') }}">Food Items</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.electronics') }}">Electronics Items</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.furniture') }}">Furniture Items</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.crockery') }}">Crockery Items</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.decoration') }}">Decoration Items</a></li>
                                     </ul>
                                 </div>
                             </li>
+
                             {{-- for satff --}}
                             <li class="nav-item">
                                 <a class="nav-link @if ($active == 'staff') active @endif" href="#"
@@ -266,38 +304,7 @@
                                     </ul>
                                 </div>
                             </li>
-                            {{-- for inventory --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'inventory') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-inventory"
-                                    aria-controls="submenu-inventory">
-                                    <i class="fa fa-fw fa-boxes"></i> Inventory
-                                </a>
-                                <div id="submenu-inventory" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('inventory.index') }}">View All</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('inventory.create') }}">Add New</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            {{-- for booking --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'booking') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-booking"
-                                    aria-controls="submenu-booking">
-                                    <i class="fa fa-fw fa-calendar-check"></i> Booking
-                                </a>
-                                <div id="submenu-booking" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('admin.bookings.index') }}">View All</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('admin.bookings.create') }}">Add New</a></li>
-                                    </ul>
-                                </div>
-                            </li>
+
                             {{-- for attendece --}}
                             <li class="nav-item">
                                 <a class="nav-link @if ($active == 'attendence') active @endif"
@@ -313,7 +320,23 @@
                                 </a>
                             </li>
 
-
+                             <li class="nav-item">
+                                <a class="nav-link @if ($active == 'analysis') active @endif" href="#"
+                                    data-toggle="collapse" aria-expanded="false" data-target="#analysis-submenu"
+                                    aria-controls="analysis-submenu">
+                                    <i class="fa fa-fw fa-box"></i> Analysis
+                                </a>
+                                <div id="analysis-submenu" class="collapse submenu">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{{ route('admin.analysis.booking') }}">Booking Analysis</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{{ route('admin.analysis.inventory') }}">Inventory Analysis</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
 
 
 
@@ -322,29 +345,13 @@
                 </nav>
             </div>
         </div>
-
+ 
         <!-- ============================================================== -->
         <!-- Main Content -->
         <!-- ============================================================== -->
         <div class="dashboard-wrapper">
             <div class="dashboard-ecommerce">
                 <div class="container-fluid dashboard-content">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-header">
-                                <div class="page-breadcrumb">
-                                    <nav aria-label="breadcrumb">
-                                        <ol class="breadcrumb">
-                                            <li class="breadcrumb-item"><a href="#"
-                                                    class="breadcrumb-link">Dashboard</a></li>
-                                            <li class="breadcrumb-item active" aria-current="page">
-                                                {{ $heading }}</li>
-                                        </ol>
-                                    </nav>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     @yield('content')
                 </div>
             </div>

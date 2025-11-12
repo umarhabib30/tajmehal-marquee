@@ -1,311 +1,446 @@
 @extends('layouts.admin')
 
+@section('style')
+    <style>
+        .dish-chip {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .dish-chip:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .remove-btn:hover {
+            background-color: #b02a37;
+            transform: scale(1.1);
+        }
+
+        .is-invalid {
+            border: 2px solid #dc3545 !important;
+            background-color: #fff6f6 !important;
+        }
+    </style>
+@endsection
+
 @section('content')
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">{{ $heading }}</h3>
-        <a href="{{ route('admin.bookings.index') }}" class="btn btn-secondary btn-sm">Back</a>
-    </div>
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3 class="mb-4">Edit Booking (ID: {{ $booking->id }})</h3>
+        </div>
+        <div class="card-body">
+            <form action="{{ route('admin.booking.update') }}" method="POST" id="bookingForm">
+                @csrf
+                <input type="hidden" name="id" value="{{ $booking->id }}" id="">
+                <div class="row g-3">
+                    {{-- Customer --}}
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Customer</label>
+                        <select name="customer_id" id="customer_id" class="form-control">
+                            <option value="">Select Customer</option>
+                            @foreach ($customers as $cust)
+                                <option value="{{ $cust->id }}" data-phone="{{ $cust->phone }}"
+                                    data-idcard="{{ $cust->idcardnumber }}" data-address="{{ $cust->address }}"
+                                    {{ $booking->customer_id == $cust->id ? 'selected' : '' }}>
+                                    {{ $cust->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-    <form action="{{ route('admin.bookings.update', $booking->id) }}" method="POST" id="bookingForm">
-        @csrf
-        @method('PUT')
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Phone</label>
+                        <input type="text" name="customer_phone" value="{{ $booking->customer_phone }}"
+                            class="form-control">
+                    </div>
 
-        <div class="row g-3">
-            <!-- Customer Selection -->
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Select Customer</label>
-                <select name="customer_id" id="customer_id" class="form-control" required>
-                    <option value="">Select Customer</option>
-                    @foreach ($customers as $cust)
-                        <option value="{{ $cust->id }}" {{ $booking->customer_id == $cust->id ? 'selected' : '' }}>
-                            {{ $cust->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">ID-Card #</label>
+                        <input type="text" name="customer_idcard" value="{{ $booking->customer_idcard }}"
+                            class="form-control">
+                    </div>
 
-            <!-- Customer Info -->
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Phone</label>
-                <input type="text" id="customer_phone" class="form-control" value="{{ $booking->customer->phone ?? '' }}" readonly>
-            </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Address</label>
+                        <input type="text" name="customer_address" value="{{ $booking->customer_address }}"
+                            class="form-control">
+                    </div>
 
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Email</label>
-                <input type="text" id="customer_email" class="form-control" value="{{ $booking->customer->email ?? '' }}" readonly>
-            </div>
+                    {{-- Package --}}
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Select Dish Package</label>
+                        <select name="package_id" id="package_id" class="form-control">
+                            <option value="">Select Package</option>
+                            @foreach ($dishPackages as $pkg)
+                                <option value="{{ $pkg->id }}"
+                                    {{ $booking->package_id == $pkg->id ? 'selected' : '' }}>
+                                    {{ $pkg->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Address</label>
-                <input type="text" id="customer_address" class="form-control" value="{{ $booking->customer->address ?? '' }}" readonly>
-            </div>
+                    {{-- Dishes --}}
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Add/Remove Dishes</label>
+                        <select id="dish_selector" class="form-control">
+                            <option value="">Select Dish to Add</option>
+                            @foreach ($dishes as $dish)
+                                <option value="{{ $dish->id }}">{{ $dish->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="selected_dishes" class="mt-2 d-flex flex-wrap gap-2"></div>
+                    </div>
 
-            <!-- Event & Hall -->
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Event Type</label>
-                <select name="event_type" class="form-control" required>
-                    <option value="">Select Event Type</option>
-                    @foreach ($eventTypes as $event)
-                        <option value="{{ $event }}" {{ $booking->event_type == $event ? 'selected' : '' }}>
-                            {{ $event }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                    <div class="col-md-12">
+                        <div id="package_dishes_box" class="p-3 border rounded bg-light"></div>
+                        <input type="hidden" name="dishes" id="dishes_input" value='@json($booking->dishes)'>
+                    </div>
 
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Hall Name</label>
-                <select name="hall_name" class="form-control" required>
-                    <option value="">Select Hall</option>
-                    @foreach ($halls as $hall)
-                        <option value="{{ $hall }}" {{ $booking->hall_name == $hall ? 'selected' : '' }}>
-                            {{ $hall }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                    {{-- Event Details --}}
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Event Type</label>
+                        <select name="event_type" class="form-control">
+                            @foreach (['Barat', 'Walime', 'Mehndi', 'Meeting', 'Get Together'] as $event)
+                                <option value="{{ $event }}"
+                                    {{ $booking->event_type == $event ? 'selected' : '' }}>
+                                    {{ $event }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-            <!-- Date & Time -->
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Booking Date</label>
-                <input type="date" name="booking_date" class="form-control" value="{{ $booking->booking_date->format('Y-m-d') }}" required>
-            </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Hall</label>
+                        <select name="hall_name" class="form-control">
+                            @foreach (['Hall 1', 'Hall 2', 'Hall 3', 'Full Hall'] as $hall)
+                                <option value="{{ $hall }}" {{ $booking->hall_name == $hall ? 'selected' : '' }}>
+                                    {{ $hall }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Time Slot</label>
-                <select name="time_slot" id="time_slot" class="form-control" required>
-                    <option value="">Select Time Slot</option>
-                    @foreach ($timeSlots as $slot)
-                        <option value="{{ $slot }}" {{ $booking->time_slot == $slot ? 'selected' : '' }}>
-                            {{ $slot }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Event Date</label>
+                        <input type="date" name="event_date" class="form-control" value="{{ $booking->event_date }}">
+                    </div>
 
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Start Time</label>
-                <input type="time" name="start_time" id="start_time" class="form-control" value="{{ $booking->start_time->format('H:i') }}" required>
-            </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Time Slot</label>
+                        <select name="time_slot" id="time_slot" class="form-control">
+                            <option value="">Select Time Slot</option>
+                            <option value="Lunch" {{ $booking->time_slot == 'Lunch' ? 'selected' : '' }}>Lunch</option>
+                            <option value="Dinner" {{ $booking->time_slot == 'Dinner' ? 'selected' : '' }}>Dinner</option>
+                        </select>
+                    </div>
 
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">End Time</label>
-                <input type="time" name="end_time" id="end_time" class="form-control" value="{{ $booking->end_time->format('H:i') }}" required>
-            </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Start Time</label>
+                        <input type="time" name="start_time" id="start_time" class="form-control"
+                            value="{{ $booking->start_time }}">
+                    </div>
 
-            <!-- Menu -->
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Menu</label>
-                <select name="menu[]" id="menu" class="form-control" multiple>
-                    @foreach ($menus as $menu)
-                        <option value="{{ $menu }}" {{ in_array($menu, $booking->menu ?? []) ? 'selected' : '' }}>
-                            {{ $menu }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">End Time</label>
+                        <input type="time" name="end_time" id="end_time" class="form-control"
+                            value="{{ $booking->end_time }}">
+                    </div>
 
-            <!-- Decorations + Extra Amount -->
-            <div class="col-12">
-                <label class="form-label fw-semibold">Decorations</label>
-                <div class="d-flex flex-wrap align-items-start gap-2 border rounded p-3 bg-light">
-                    <div class="d-flex flex-wrap gap-2 flex-grow-1">
+                    {{-- Financials --}}
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Guests Count</label>
+                        <input type="number" name="guests_count" id="guests_count"
+                            value="{{ $booking->guests_count }}" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Per Head Price</label>
+                        <input type="number" name="per_head_price" id="per_head_price"
+                            value="{{ $booking->per_head_price }}" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Advance Payment</label>
+                        <input type="number" name="advance_payment" id="advance_payment"
+                            value="{{ $booking->advance_payment }}" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold d-block">Decorations</label>
+                        @php $decorations = ['Bridal Groom Entry','DJ','Floral Decore']; @endphp
                         @foreach ($decorations as $dec)
-                            <div class="form-check small" style="min-width: 110px;">
-                                <input class="form-check-input me-1" type="checkbox" name="decoration[]"
-                                       value="{{ $dec }}" id="dec-{{ $loop->index }}"
-                                       {{ in_array($dec, $booking->decoration ?? []) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="dec-{{ $loop->index }}">{{ $dec }}</label>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" name="decorations[]"
+                                    value="{{ $dec }}"
+                                    {{ in_array($dec, $booking->decorations ?? []) ? 'checked' : '' }}>
+                                <label class="form-check-label">{{ $dec }}</label>
                             </div>
                         @endforeach
                     </div>
-                    <div class="ms-auto" style="min-width: 200px;">
-                        <label class="form-label fw-semibold mb-1">Additional Charges (₨)</label>
-                        <input type="number" id="extra_amount" name="extra_amount" class="form-control" value="{{ old('extra_amount', $booking->extra_amount ?? 0) }}">
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Decore Price</label>
+                        <input type="number" name="decore_price" class="form-control"
+                            value="{{ $booking->decore_price }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Tax Amount</label>
+                        <input type="number" name="tax_amount" id="tax_percent" value="{{ $booking->tax_amount }}"
+                            class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Total Amount</label>
+                        <input type="text" id="total_amount" name="total_amount"
+                            value="{{ $booking->total_amount }}" class="form-control bg-light" readonly>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Payment Method</label>
+                        <select name="payment_method" class="form-control">
+                            <option value="Cash" {{ $booking->payment_method == 'Cash' ? 'selected' : '' }}>Cash
+                            </option>
+                            <option value="Online Payment"
+                                {{ $booking->payment_method == 'Online Payment' ? 'selected' : '' }}>Online Payment
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Remaining Amount</label>
+                        <input type="text" id="remaining_amount" name="remaining_amount"
+                            class="form-control bg-light" value="{{ $booking->remaining_amount }}" readonly>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Notes</label>
+                        <textarea name="notes" class="form-control" rows="3">{{ $booking->notes }}</textarea>
+                    </div>
+
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i> Update
+                            Booking</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Guests & Prices -->
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Guests Count</label>
-                <input type="number" name="guests_count" id="guests_count" class="form-control" value="{{ $booking->guests_count }}" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Per Head Price (₨)</label>
-                <input type="number" name="per_head_price" id="per_head_price" class="form-control" value="{{ $booking->per_head_price }}" required>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Tax (₨)</label>
-                <input type="number" name="tax" id="tax" class="form-control" value="{{ $booking->tax ?? 0 }}">
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Total Amount (₨)</label>
-                <input type="text" name="total_amount" id="total_amount" class="form-control" readonly>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Advance Payment (₨)</label>
-                <input type="number" name="advance_payment" id="advance_payment" class="form-control" value="{{ $booking->advance_payment }}">
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Remaining Amount (₨)</label>
-                <input type="text" name="remaining_amount" id="remaining_amount" class="form-control" readonly>
-            </div>
-
-            <!-- Payment Method -->
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Payment Method</label>
-                <select name="payment_method" class="form-control" required>
-                    @foreach ($paymentMethods as $method)
-                        <option value="{{ $method }}" {{ $booking->payment_method == $method ? 'selected' : '' }}>
-                            {{ $method }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Signatures -->
-            <div class="row mt-3">
-                <div class="col-md-6 d-flex flex-column align-items-center">
-                    <label class="form-label fw-semibold">Customer Signature</label>
-                    <canvas id="customerPad" class="border rounded bg-white w-100 shadow-sm" height="100"></canvas>
-                    <input type="hidden" name="customer_signature" id="customer_signature" value="{{ $booking->customer_signature }}">
-                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="clearPad('customerPad')">Clear</button>
-                </div>
-
-                <div class="col-md-6 d-flex flex-column align-items-center">
-                    <label class="form-label fw-semibold">Manager Signature</label>
-                    <canvas id="managerPad" class="border rounded bg-white w-100 shadow-sm" height="100"></canvas>
-                    <input type="hidden" name="manager_signature" id="manager_signature" value="{{ $booking->manager_signature }}">
-                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="clearPad('managerPad')">Clear</button>
-                </div>
-            </div>
-
-            <!-- Notes -->
-            <div class="col-md-12 mt-3">
-                <label class="form-label fw-semibold">Notes</label>
-                <textarea name="notes" class="form-control" rows="3">{{ $booking->notes }}</textarea>
-            </div>
+            </form>
         </div>
+    </div>
+@endsection
 
-        <div class="text-end mt-4">
-            <button type="submit" class="btn btn-primary px-4">
-                <i class="fas fa-save"></i> Update Booking
-            </button>
-        </div>
-    </form>
-</div>
+@section('script')
+    <script>
+        // ===================== Auto-fill customer details =====================
+        document.getElementById('customer_id').addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            document.querySelector('input[name="customer_phone"]').value = selected.getAttribute('data-phone') ||
+            '';
+            document.querySelector('input[name="customer_idcard"]').value = selected.getAttribute('data-idcard') ||
+                '';
+            document.querySelector('input[name="customer_address"]').value = selected.getAttribute(
+                'data-address') || '';
+        });
 
-<script>
-    // === Time Slot Logic ===
-    document.getElementById('time_slot').addEventListener('change', function() {
-        const slot = this.value.toLowerCase();
-        const start = document.getElementById('start_time');
-        const end = document.getElementById('end_time');
-        if (slot.includes('lunch')) {
-            start.value = '13:00';
-            end.value = '16:00';
-        } else if (slot.includes('dinner')) {
-            start.value = '19:00';
-            end.value = '22:00';
+        // ===================== Time slot autofill =====================
+        document.getElementById('time_slot').addEventListener('change', function() {
+            const startTime = document.getElementById('start_time');
+            const endTime = document.getElementById('end_time');
+            if (this.value === 'Lunch') {
+                startTime.value = '13:00';
+                endTime.value = '16:00';
+            } else if (this.value === 'Dinner') {
+                startTime.value = '19:00';
+                endTime.value = '22:00';
+            } else {
+                startTime.value = '';
+                endTime.value = '';
+            }
+        });
+
+        // ===================== Amount Calculations (Edit-safe) =====================
+        const guestInput = document.getElementById('guests_count');
+        const priceInput = document.getElementById('per_head_price');
+        const taxInput = document.getElementById('tax_percent');
+        const advanceInput = document.getElementById('advance_payment');
+        const decoreInput = document.querySelector('input[name="decore_price"]');
+        const totalField = document.getElementById('total_amount');
+        const remainingField = document.getElementById('remaining_amount');
+
+        // Snapshot of original booking monetary state (from server)
+        const ORIGINAL = {
+            total: parseFloat(@json((float) ($booking->total_amount ?? 0))) || 0,
+            remaining: parseFloat(@json((float) ($booking->remaining_amount ?? 0))) || 0,
+            advance: parseFloat(@json((float) ($booking->advance_payment ?? 0))) || 0,
+        };
+        // Everything paid up to now (including original advance + any other payments)
+        ORIGINAL.paid = Math.max(0, ORIGINAL.total - ORIGINAL.remaining);
+
+        function number(val) {
+            const n = parseFloat(val);
+            return Number.isFinite(n) ? n : 0;
         }
-    });
 
-    // === Amount Calculation (Guests + Per Head + Tax + Menu + Extra) ===
-    const guestInput = document.getElementById('guests_count');
-    const priceInput = document.getElementById('per_head_price');
-    const taxInput = document.getElementById('tax');
-    const extraInput = document.getElementById('extra_amount');
-    const advanceInput = document.getElementById('advance_payment');
-    const menuSelect = document.getElementById('menu');
-    const totalField = document.getElementById('total_amount');
-    const remainingField = document.getElementById('remaining_amount');
+        function calculateAmounts() {
+            const guests = number(guestInput.value);
+            const perHead = number(priceInput.value);
+            const tax = number(taxInput.value); // flat tax amount
+            const decore = number(decoreInput.value); // flat decore amount
+            const advNow = number(advanceInput.value); // current advance field
 
-    function calculateAmounts() {
-        const guests = parseFloat(guestInput.value) || 0;
-        const perHead = parseFloat(priceInput.value) || 0;
-        const tax = parseFloat(taxInput.value) || 0;
-        const extra = parseFloat(extraInput.value) || 0;
+            // New total from editable inputs
+            const newTotal = (guests * perHead) + tax + decore;
 
-        // Menu cost per selected menu (example: 500 per menu)
-        let menuTotal = 0;
-        Array.from(menuSelect.selectedOptions).forEach(opt => menuTotal += 500);
+            // If user changed "Advance Payment", treat it as editing the *advance figure*,
+            // not an extra payment. So adjust paid_so_far by the delta vs original advance:
+            const deltaAdvance = advNow - ORIGINAL.advance;
+            const paidSoFar = Math.max(0, ORIGINAL.paid + deltaAdvance);
 
-        const total = (guests * perHead) + tax + extra + menuTotal;
-        const advance = parseFloat(advanceInput.value) || 0;
-        const remaining = total - advance;
+            // Remaining should subtract what has already been paid (after delta)
+            let newRemaining = newTotal - paidSoFar;
 
-        totalField.value = total.toFixed(2);
-        remainingField.value = remaining.toFixed(2);
-    }
+            // Never go below zero; if it does, you may want to show "refund due" separately
+            if (newRemaining < 0) newRemaining = 0;
 
-    [guestInput, priceInput, taxInput, extraInput, advanceInput, menuSelect].forEach(el => {
-        el.addEventListener('input', calculateAmounts);
-        el.addEventListener('change', calculateAmounts);
-    });
-    calculateAmounts();
+            totalField.value = newTotal.toFixed(2);
+            remainingField.value = newRemaining.toFixed(2);
+        }
 
-    // === Signature Pads ===
-    function initPad(canvasId, inputId) {
-        const canvas = document.getElementById(canvasId);
-        const ctx = canvas.getContext('2d');
-        let drawing = false;
-        canvas.addEventListener('mousedown', () => drawing = true);
-        canvas.addEventListener('mouseup', () => {
-            drawing = false;
-            document.getElementById(inputId).value = canvas.toDataURL();
-            ctx.beginPath();
+        // Recalculate on input changes
+        [guestInput, priceInput, taxInput, advanceInput, decoreInput].forEach(el => {
+            el.addEventListener('input', calculateAmounts);
+            el.addEventListener('change', calculateAmounts);
         });
-        canvas.addEventListener('mousemove', e => {
-            if (!drawing) return;
-            ctx.lineWidth = 2;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#000';
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(e.offsetX, e.offsetY);
-            document.getElementById(inputId).value = canvas.toDataURL();
+
+        // Initialize once the DOM is ready so fields reflect correct remaining on load
+        document.addEventListener('DOMContentLoaded', calculateAmounts);
+
+        // Ensure correct values get posted even if user submits without touching fields
+        document.getElementById('bookingForm').addEventListener('submit', function() {
+            calculateAmounts();
         });
-    }
-    initPad('customerPad', 'customer_signature');
-    initPad('managerPad', 'manager_signature');
+        // ===================== Dishes =====================
+        const packages = @json($dishPackages);
+        const pkgSelect = document.getElementById('package_id');
+        const pkgBox = document.getElementById('package_dishes_box');
+        const dishSelect = document.getElementById('dish_selector');
+        const dishesInput = document.getElementById('dishes_input');
 
-    function loadSignature(canvasId, base64) {
-        if (!base64) return;
-        const canvas = document.getElementById(canvasId);
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        img.src = base64;
-    }
-    loadSignature('customerPad', '{{ $booking->customer_signature }}');
-    loadSignature('managerPad', '{{ $booking->manager_signature }}');
+        let selectedDishes = [];
+        const allDishes = @json($dishes);
 
-    function clearPad(canvasId) {
-        const canvas = document.getElementById(canvasId);
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        document.getElementById(canvasId.replace('Pad', '_signature')).value = '';
-    }
-
-    // === Fetch Customer Info ===
-    document.getElementById('customer_id').addEventListener('change', function() {
-        const id = this.value;
-        if (!id) return;
-        fetch(`/admin/get-customer/${id}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('customer_phone').value = data.phone || '';
-                document.getElementById('customer_email').value = data.email || '';
-                document.getElementById('customer_address').value = data.address || '';
+        function renderSelectedDishes() {
+            pkgBox.innerHTML = '';
+            if (!selectedDishes.length) {
+                pkgBox.innerHTML = '<span class="text-muted">No dishes selected.</span>';
+                return;
+            }
+            const container = document.createElement('div');
+            container.classList.add('d-flex', 'flex-wrap', 'gap-3', 'mt-2');
+            selectedDishes.forEach(dish => {
+                const chip = document.createElement('div');
+                chip.classList.add('dish-chip', 'd-flex', 'align-items-center', 'px-3', 'py-2', 'shadow-sm');
+                chip.innerHTML = `<span>${dish.name}</span>
+                <button type="button" class="remove-btn">×</button>`;
+                chip.querySelector('button').addEventListener('click', () => {
+                    selectedDishes = selectedDishes.filter(d => d.id !== dish.id);
+                    renderSelectedDishes();
+                    updateDishesInput();
+                });
+                container.appendChild(chip);
             });
-    });
-</script>
+            pkgBox.appendChild(container);
+        }
+
+        function updateDishesInput() {
+            dishesInput.value = JSON.stringify(selectedDishes.map(d => d.id));
+        }
+
+        pkgSelect.addEventListener('change', function() {
+            const pkgId = this.value;
+            if (!pkgId) {
+                pkgBox.innerHTML = '<div class="text-muted">Select a package...</div>';
+                selectedDishes = [];
+                updateDishesInput();
+                renderSelectedDishes();
+                return;
+            }
+            const pkg = packages.find(p => p.id == pkgId);
+            if (!pkg || !pkg.dishes.length) {
+                pkgBox.innerHTML = '<div class="text-danger">No dishes found.</div>';
+                selectedDishes = [];
+                updateDishesInput();
+                renderSelectedDishes();
+                return;
+            }
+            selectedDishes = pkg.dishes.map(d => ({
+                id: d.id,
+                name: d.name
+            }));
+            renderSelectedDishes();
+            updateDishesInput();
+        });
+
+        dishSelect.addEventListener('change', function() {
+            const id = this.value;
+            const name = this.options[this.selectedIndex].text;
+            if (id && !selectedDishes.find(d => d.id == id)) {
+                selectedDishes.push({
+                    id,
+                    name
+                });
+                renderSelectedDishes();
+                updateDishesInput();
+            }
+            this.value = '';
+        });
+
+        // Load existing dishes on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const existing = @json($booking->dishes ?? []);
+            selectedDishes = allDishes.filter(d => existing.includes(d.id));
+            renderSelectedDishes();
+        });
+
+        // ===================== Validation =====================
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            const required = ['customer_id', 'package_id', 'event_type', 'hall_name', 'event_date', 'time_slot',
+                'guests_count', 'per_head_price'
+            ];
+            for (const name of required) {
+                const el = document.querySelector(`[name="${name}"]`);
+                if (!el.value.trim()) {
+                    e.preventDefault();
+                    alert('Please fill all required fields properly.');
+                    el.focus();
+                    return;
+                }
+            }
+            calculateAmounts();
+        });
+    </script>
 @endsection

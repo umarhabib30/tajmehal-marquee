@@ -6,7 +6,6 @@
         <div class="card">
             <h5 class="card-header">Add Staff</h5>
             <div class="card-body">
-                <a href="{{ route('staff.index') }}" class="btn btn-secondary mb-3">Back</a>
 
                 <form action="{{ route('staff.store') }}" method="POST">
                     @csrf
@@ -17,7 +16,13 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Role</label>
-                            <input name="role" type="text" class="form-control" placeholder="Enter Role" value="{{ old('role') }}" required>
+                            <select name="role" id="" class="form-control">
+                                <option value="Manager">Manager</option>
+                                <option value="Waiter">Waiter</option>
+                                <option value="Chef">Chef</option>
+                                <option value="Cleaner">Cleaner</option>
+                                <option value="Security">Security</option>
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Email</label>
@@ -44,16 +49,8 @@
                             <label>Joining Date</label>
                             <input name="joining_date" type="date" class="form-control" value="{{ old('joining_date') }}">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label>Status</label>
-                            <select name="status" class="form-control">
-                                <option value="Active" {{ old('status')=='Active'?'selected':'' }}>Active</option>
-                                <option value="Inactive" {{ old('status')=='Inactive'?'selected':'' }}>Inactive</option>
-                                <option value="On Leave" {{ old('status')=='On Leave'?'selected':'' }}>On Leave</option>
-                            </select>
-                        </div>
                     </div>
-                    <button type="submit" class="btn btn-success">Save Staff</button>
+                    <button type="submit" class="btn btn-success ">Save Staff</button>
                 </form>
             </div>
         </div>

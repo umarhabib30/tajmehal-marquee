@@ -16,7 +16,7 @@ $(function() {
         limitMax: false, // If false, max value increases automatically if value > maxValue
         limitMin: false, // If true, the min value of the gauge will be fixed
         colorStart: '#e4e4ee', // Colors
-        colorStop: '#5969ff', // just experiment with them
+        colorStop: '#29166f ', // just experiment with them
         strokeColor: '#e4e4ee', // to see which ones work best for you
         generateGradient: true,
         highDpiSupport: true, // High resolution support
@@ -89,7 +89,7 @@ var opts = {
         },
         limitMax: false, // If false, max value increases automatically if value > maxValue
         limitMin: false, // If true, the min value of the gauge will be fixed
-        colorStart: '#5969ff', // Colors
+        colorStart: '#29166f ', // Colors
         colorStop: '#8FC0DA', // just experiment with them
         strokeColor: '#E0E0E0', // to see which ones work best for you
         generateGradient: true,

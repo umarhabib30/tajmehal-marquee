@@ -8,36 +8,35 @@ use Illuminate\Database\Eloquent\Model;
 class Booking extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'customer_id',
+        'customer_phone',
+        'customer_idcard',
+        'customer_address',
         'event_type',
         'hall_name',
-        'booking_date',
+        'event_date',
         'time_slot',
         'start_time',
         'end_time',
-        'dish_package_id',
-        'decoration',
-        'decoration_amount',
+        'package_id',  // matches <select name="package_id">
+        'dishes',  // stores JSON of selected dish IDs
+        'decorations',  // stores array or JSON of decorations
+        'decore_price',
         'guests_count',
-        'price_per_head',
-        'tax',
+        'per_head_price',
+        'tax_amount',
+        'advance_payment',
         'total_amount',
         'remaining_amount',
+        'payment_method',
         'customer_signature',
         'manager_signature',
-        'notes'
-    ];
-
-    protected $casts = [
-        'booking_date' => 'date',
-        'start_time' => 'datetime:H:i',
-        'end_time' => 'datetime:H:i',
-        'total_amount' => 'decimal:2',
-        'remaining_amount' => 'decimal:2',
-        'price_per_head' => 'decimal:2',
-        'tax' => 'decimal:2',
-        'decoration_amount' => 'decimal:2',
+        'notes',
+        'booking_date',
+        'extra_guests',
+        'extra_guest_per_head_price',
     ];
 
     public function customer()
@@ -49,4 +48,10 @@ class Booking extends Model
     {
         return $this->belongsTo(DishPackage::class);
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
 }

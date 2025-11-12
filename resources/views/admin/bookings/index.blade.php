@@ -1,77 +1,135 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold">{{ $heading }}</h3>
-        <a href="{{ route('admin.booking.create') }}" class="btn btn-primary">+ Add Booking</a>
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="fw-bold">{{ $heading }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="bookingTable" class="table table-striped table-bordered first">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer Name</th>
+                                    <th>Phone Number</th>
+                                    <th>Event Type</th>
+                                    <th>Hall</th>
+                                    <th>Event Date</th>
+                                    <th>Payment Status</th>
+                                    <th>Details</th>
+                                    <th>Invoice</th>
+                                    <th>Edit</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($bookings as $booking)
+                                    @php
+                                        $paidAmount = $booking->payments->sum('amount');
+                                        $totalAmount = $booking->total_amount;
+                                        $isPaid = $paidAmount >= $totalAmount;
+                                        $status = $isPaid ? 'Paid' : 'Pending';
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $booking->id }}</td>
+                                        <td>{{ $booking->customer->name ?? 'N/A' }}</td>
+                                        <td>{{ $booking->customer->phone ?? 'N/A' }}</td>
+                                        <td>{{ $booking->event_type }}</td>
+                                        <td>{{ $booking->hall_name }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('d-M-Y') }}</td>
+                                        <td>
+                                            <span class="badge {{ $isPaid ? 'bg-success' : 'bg-warning text-dark' }}">
+                                                {{ $status }}
+                                            </span>
+                                            <small class="text-muted d-block">
+                                                Paid: ₨ {{ number_format($paidAmount, 0) }} /
+                                                {{ number_format($totalAmount, 0) }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('admin.booking.show', $booking->id) }}"
+                                                class="btn btn-sm btn-primary text-white">
+                                                Show
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('admin.booking.invoice', $booking->id) }}"
+                                                class="btn btn-sm btn-primary text-white">
+                                                Invoice
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('admin.booking.edit', $booking->id) }}"
+                                                class="btn btn-sm btn-primary text-white">
+                                                Edit
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-sm btn-success add-payment-btn"
+                                                href="{{ route('admin.booking.addPaymentPage', $booking->id) }}">
+                                                <i class="fa fa-plus"></i> Add Payment
+                                            </a>
+                                        </td>
+
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label>Filter by Payment Status:</label>
-        <select id="paymentFilter" class="form-control w-auto d-inline-block">
-            <option value="">All</option>
-            <option value="Paid">Paid</option>
-            <option value="Pending Amount">Pending Amount</option>
-        </select>
-    </div>
+    {{-- Include DataTables + SweetAlert --}}
+@section('script')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <table id="bookingTable" class="table table-striped table-bordered">
-        <thead>
-            <tr>
-                <th>Customer Name</th>
-                <th>Phone Number</th>
-                <th>Event Type</th>
-                <th>Booking Date</th>
-                <th>Payment Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach($bookings as $booking)
-            <tr>
-                <td>{{ $booking->customer->name }}</td>
-                <td>{{ $booking->customer->phone }}</td>
-                <td>{{ $booking->event_type }}</td>
-                <td>{{ $booking->booking_date->format('d-M-Y') }}</td>
-                <td>{{ $booking->status }}</td>
-                <td>
-                    <a href="{{ route('admin.booking.show', $booking->id) }}" class="btn btn-sm btn-info">Show</a>
-                    <button class="btn btn-sm btn-danger delete-btn" data-url="{{ route('admin.booking.destroy', $booking->id) }}">Delete</button>
-                </td>
-            </tr>
-        @endforeach
-        </tbody>
-    </table>
-</div>
+    <script>
+        $(document).ready(function() {
 
-<script>
-$(document).ready(function(){
-    var table = $('#bookingTable').DataTable();
 
-    $('#paymentFilter').on('change', function(){
-        var val = $(this).val();
-        table.column(4).search(val).draw();
-    });
+            // Delete button
+            $(document).on('click', '.delete-btn', function() {
+                const url = $(this).data('url');
 
-    $('.delete-btn').on('click', function(){
-        var url = $(this).data('url');
-        if(confirm('Are you sure you want to delete this booking?')){
-            fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            }).then(res=>res.json()).then(data=>{
-                if(data.success) {
-                    location.reload();
-                } else {
-                    alert('Delete failed');
-                }
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'This will permanently delete the booking!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it'
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
+
+                    fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Deleted!', 'Booking has been removed.', 'success');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                Swal.fire('Error', data.message || 'Failed to delete booking.',
+                                    'error');
+                            }
+                        })
+                        .catch(() => Swal.fire('Error', 'Request failed.', 'error'));
+                });
             });
-        }
-    });
-});
-</script>
+
+        });
+    </script>
+@endsection
 @endsection

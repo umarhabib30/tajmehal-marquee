@@ -16,7 +16,7 @@
                 xkey: 'x',
                 ykeys: ['y', 'z'],
                 labels: ['Y', 'Z'],
-                 lineColors: ['#5969ff', '#ff407b'],
+                 lineColors: ['#29166f ', '#ff407b'],
                    resize: true,
                    gridTextSize: '14px'
 
@@ -46,7 +46,7 @@
                 xkey: 'y',
                 ykeys: ['a', 'b'],
                 labels: ['Series A', 'Series B'],
-                   lineColors: ['#5969ff', '#ff407b'],
+                   lineColors: ['#29166f ', '#ff407b'],
                      resize: true,
                         gridTextSize: '14px'
             });
@@ -70,7 +70,7 @@
                 xkey: 'x',
                 ykeys: ['y'],
                 labels: ['Y'],
-                   barColors: ['#5969ff'],
+                   barColors: ['#29166f '],
                      resize: true,
                         gridTextSize: '14px'
 
@@ -92,7 +92,7 @@
                 ykeys: ['y', 'z', 'a'],
                 labels: ['Y', 'Z', 'A'],
                 stacked: true,
-                   barColors: ['#5969ff', '#ff407b', '#25d5f2'],
+                   barColors: ['#29166f ', '#ff407b', '#25d5f2'],
                      resize: true,
                         gridTextSize: '14px'
             });
@@ -124,7 +124,7 @@
                 ymin: -1.0,
                 ymax: 1.0,
                 hideHover: true,
-                lineColors: ['#5969ff', '#ff407b'],
+                lineColors: ['#29166f ', '#ff407b'],
                   resize: true
             });
 
@@ -150,7 +150,7 @@
                 labelColor: '#2e2f39',
                    gridTextSize: '14px',
                 colors: [
-                     "#5969ff",
+                     "#29166f ",
                                 "#ff407b",
                                 "#25d5f2",
                                 "#ffc750"

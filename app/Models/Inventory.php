@@ -8,17 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Inventory extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name',
         'category',
+        'quantity_type',
         'quantity',
-        'price',
-        'purchase_date',
-        'expiry_date',
-        'condition',
-        'warranty_period',
-        'location',
-        'supplier_name',
-        'status',
+        
     ];
+
+    public function stocks()
+    {
+        return $this->hasMany(InventoryStock::class, 'inventory_id');
+    }
 }

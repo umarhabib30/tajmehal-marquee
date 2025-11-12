@@ -80,7 +80,7 @@ $(function() {
                     labels: ["Direct", " Affilliate", "Sponsored", " E-mail"],
                     datasets: [{
                         backgroundColor: [
-                            "#5969ff",
+                            "#29166f ",
                             "#ff407b",
                             "#25d5f2",
                             "#ffc750"
@@ -167,7 +167,7 @@ $(function() {
         type: 'line',
         width: '99.5%',
         height: '100',
-        lineColor: '#5969ff',
+        lineColor: '#29166f ',
         fillColor: '#dbdeff',
         lineWidth: 2,
         spotColor: undefined,

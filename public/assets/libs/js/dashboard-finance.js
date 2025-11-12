@@ -14,7 +14,7 @@ $(function() {
         type: 'line',
         width: '99.5%',
         height: '100',
-        lineColor: '#5969ff',
+        lineColor: '#29166f ',
         fillColor: '',
         lineWidth: 2,
         spotColor: undefined,
@@ -151,10 +151,10 @@ $(function() {
                    
                 ],
              
-                labelColor: '#5969ff',
+                labelColor: '#29166f ',
 
                 colors: [
-                    '#5969ff',
+                    '#29166f ',
                     '#a8b0ff'
                    
                 ],
@@ -228,7 +228,7 @@ $(function() {
     var a = c3.generate({
         bindto: "#goodservice",
         size: { height: 350 },
-        color: { pattern: ["#5969ff", "#ff407b"] },
+        color: { pattern: ["#29166f ", "#ff407b"] },
         data: {
             columns: [
                 ["Service", 20000, 25000, 30000, 80000, 10000, 50000],
@@ -322,7 +322,7 @@ $(function() {
 
     var chart = c3.generate({
         bindto: "#account",
-        color: { pattern: ["#5969ff", "#ff407b", "#25d5f2", "#ffc750"] },
+        color: { pattern: ["#29166f ", "#ff407b", "#25d5f2", "#ffc750"] },
         data: {
             // iris data from R
             columns: [

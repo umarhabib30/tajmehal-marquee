@@ -169,7 +169,7 @@
                         labels: ["M", "T", "W", "T", "F", "S", "S"],
                         datasets: [{
                             backgroundColor: [
-                                "#5969ff",
+                                "#29166f ",
                                 "#ff407b",
                                 "#25d5f2",
                                 "#ffc750",
@@ -207,7 +207,7 @@
                         labels: ["M", "T", "W", "T", "F", "S", "S"],
                         datasets: [{
                             backgroundColor: [
-                               "#5969ff",
+                               "#29166f ",
                                 "#ff407b",
                                 "#25d5f2",
                                 "#ffc750",
@@ -244,7 +244,7 @@
                         labels: ["M", "T", "W", "T", "F", "S", "S"],
                         datasets: [{
                             backgroundColor: [
-                                 "#5969ff",
+                                 "#29166f ",
                                 "#ff407b",
                                 "#25d5f2",
                                 "#ffc750",

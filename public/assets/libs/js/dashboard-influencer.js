@@ -12,9 +12,9 @@ $(function() {
 
         ],
 
-        labelColor: '#5969ff',
+        labelColor: '#29166f ',
         colors: [
-            '#5969ff',
+            '#29166f ',
             '#ff407b',
 
         ],

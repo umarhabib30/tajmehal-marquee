@@ -4,12 +4,8 @@
     <!-- ============================================================== -->
     <div class="row">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-            <div class="section-block" id="basicform">
-                <h3 class="section-title">Form</h3>
-                <p>Enter Customer Details</p>
-            </div>
             <div class="card">
-                <h5 class="card-header">Customer Form</h5>
+                <h5 class="card-header">Add Customer</h5>
                 <div class="card-body">
                     <form action="{{ route('customer.store') }}" method="POST" novalidate>
                         @csrf
@@ -43,7 +39,7 @@
                                 <label for="idcardnumber" class="col-form-label">ID Card Number</label>
                                 <input id="idcardnumber" name="idcardnumber" type="text" class="form-control"
                                        placeholder="xxxxx-xxxxxxx-x" maxlength="15"
-                                       value="{{ old('idcardnumber') }}" required>
+                                       value="{{ old('idcardnumber') }}" >
                                 @error('idcardnumber') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                         </div>

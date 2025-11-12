@@ -130,7 +130,7 @@
         type: 'line',
         width: '99.5%',
         height: '100',
-        lineColor: '#5969ff',
+        lineColor: '#29166f ',
         fillColor: '#dbdeff',
         lineWidth: 2,
         spotColor: undefined,
@@ -213,7 +213,7 @@
         xkey: 'x',
         ykeys: ['y'],
         labels: ['Y'],
-        lineColors: ['#5969ff'],
+        lineColors: ['#29166f '],
         resize: true
 
     });
@@ -243,7 +243,7 @@
             onmouseout: function(d, i) { console.log("onmouseout", d, i); },
 
             colors: {
-                Men: '#5969ff',
+                Men: '#29166f ',
                 Women: '#ff407b',
                 Accessories: '#25d5f2',
                 Children: '#ffc750',

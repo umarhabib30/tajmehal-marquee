@@ -42,7 +42,7 @@ class StaffController extends Controller
         $validator = Validator::make($request->all(), [
             'name'         => 'required|string|max:100',
             'role'         => 'required|string|max:50',
-            'email'        => 'nullable|email|unique:staff,email',
+            'email'        => 'nullable|email',
             'phone'        => ['required', 'regex:/^\d{11}$/'],
             'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:staff,idcardnumber'],
             'salary'       => 'nullable|numeric',
@@ -60,7 +60,7 @@ class StaffController extends Controller
 
         Staff::create($request->all());
 
-        return redirect()->route('staff.index')->with('success', 'Staff added successfully.');
+        return redirect()->back()->with('success', 'Staff added successfully.');
     }
 
     // Show edit form
@@ -85,7 +85,7 @@ class StaffController extends Controller
             'id'           => 'required|exists:staff,id',
             'name'         => 'required|string|max:100',
             'role'         => 'required|string|max:50',
-            'email'        => 'nullable|email|unique:staff,email,' . $request->id,
+            'email'        => 'nullable|email',
             'phone'        => ['required', 'regex:/^\d{11}$/'],
             'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:staff,idcardnumber,' . $request->id],
             'salary'       => 'nullable|numeric',

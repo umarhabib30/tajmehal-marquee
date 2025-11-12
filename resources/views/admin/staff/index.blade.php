@@ -6,9 +6,8 @@
     <!-- ============================================================== -->
     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
         <div class="card">
-            <h5 class="card-header">Staff Table</h5>
+            <h5 class="card-header">Staff</h5>
             <div class="card-body">
-                <a href="{{ route('staff.create') }}" class="btn btn-success mb-3">Add New Staff</a>
                 <div class="table-responsive">
                     <table class="table table-striped table-bordered first">
                         <thead>

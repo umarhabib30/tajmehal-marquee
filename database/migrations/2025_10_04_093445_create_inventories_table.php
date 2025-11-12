@@ -16,14 +16,8 @@ return new class extends Migration
             $table->string('name'); // item name
             $table->enum('category', ['Food', 'Electronics', 'Furniture', 'Decoration', 'Crockery']);
             $table->integer('quantity');
-            $table->decimal('price', 10, 2)->nullable();
-            $table->date('purchase_date')->nullable();
-            $table->date('expiry_date')->nullable(); // for food
-            $table->string('condition')->nullable(); // Good, Broken, etc.
-            $table->string('warranty_period')->nullable(); // for electronics
-            $table->string('location')->nullable(); // for furniture
-            $table->string('supplier_name')->nullable();
-            $table->string('status')->default('Available'); // Available, In Use, Damaged
+            $table->enum('quantity_type', ['Pieces', 'Kg']);
+         
             $table->timestamps();
         });
     }

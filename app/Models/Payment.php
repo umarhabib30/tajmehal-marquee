@@ -5,16 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Dish extends Model
+class Payment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'booking_id',
+        'amount',
+        'payment_date',
+        'payment_method',
     ];
 
-    public function packages()
+    public function booking()
     {
-        return $this->belongsToMany(DishPackage::class, 'dish_package_dish');
+        return $this->belongsTo(Booking::class);
     }
 }

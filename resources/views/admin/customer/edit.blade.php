@@ -2,10 +2,6 @@
 @section('content')
     <div class="row">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-            <div class="section-block" id="basicform">
-                <h3 class="section-title">Customer Form</h3>
-                <p>Edit Customer Details</p>
-            </div>
             <div class="card">
                 <h5 class="card-header">Edit Customer</h5>
                 <div class="card-body">
@@ -64,7 +60,7 @@
                             </div>
                         </div>
 
-                        <div class="text-center">
+                        <div >
                             <button type="submit" class="btn btn-primary px-5">Update Customer</button>
                         </div>
                     </form>

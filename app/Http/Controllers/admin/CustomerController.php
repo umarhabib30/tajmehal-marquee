@@ -4,6 +4,8 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\Dish;
+use App\Models\DishPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -39,9 +41,8 @@ class CustomerController extends Controller
             $request->all(),
             [
                 'name'         => 'required|string|max:255',
-                'email'        => 'required|email|max:255|unique:customers,email',
-                'phone'        => 'required|digits:11',
-                'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:customers,idcardnumber'],
+                'email'        => 'email|max:255',
+                'phone'        => 'required|digits:11|unique:customers,phone',
                 'address'      => 'required|string|max:500',
             ]
         );
@@ -60,9 +61,8 @@ class CustomerController extends Controller
         }
 
         // ✅ Save new record
-        Customer::create($request->all());
-
-        return redirect()->route('customer.index')->with('success', 'Customer created successfully!');
+       $customer=  Customer::create($request->all());
+       return redirect()->route('admin.booking.createWithCustomer',$customer->id)->with('success', 'Customer created successfully!');
     }
 
     public function edit($id)
@@ -84,9 +84,9 @@ class CustomerController extends Controller
             $request->all(),
             [
                 'name'         => 'required|string|max:255',
-                'email'        => 'required|email|max:255|unique:customers,email,' . $id,
-                'phone'        => 'required|digits:11',
-                'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:customers,idcardnumber,' . $id],
+                'email'        => 'required|email|max:255',
+                'phone'        => 'required|digits:11|unique:customers,phone,' . $id,
+                'idcardnumber' => [ 'regex:/^\d{5}-\d{7}-\d{1}$/'],
                 'address'      => 'required|string|max:500',
             ]
         );
