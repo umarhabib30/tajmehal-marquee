@@ -16,9 +16,9 @@ class StaffController extends Controller
 
         $data = [
             'heading' => 'Staff Management',
-            'title'   => 'View Staff',
-            'active'  => 'staff',
-            'staff'   => $staff,
+            'title' => 'View Staff',
+            'active' => 'staff',
+            'staff' => $staff,
         ];
 
         return view('admin.staff.index', $data);
@@ -29,8 +29,8 @@ class StaffController extends Controller
     {
         $data = [
             'heading' => 'Staff Management',
-            'title'   => 'Add New Staff',
-            'active'  => 'staff',
+            'title' => 'Add New Staff',
+            'active' => 'staff',
         ];
 
         return view('admin.staff.create', $data);
@@ -40,25 +40,28 @@ class StaffController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'         => 'required|string|max:100',
-            'role'         => 'required|string|max:50',
-            'email'        => 'nullable|email',
-            'phone'        => ['required', 'regex:/^\d{11}$/'],
-            'idcardnumber' => ['regex:/^\d{5}-\d{7}-\d{1}$/'],
-            'salary'       => 'nullable|numeric',
-            'experience'   => 'nullable|integer|min:0',
-            'status'       => 'nullable|string',
+            'name' => 'required|string|max:100',
+            'role' => 'required|string|max:50',
+            'email' => 'nullable|email',
+            'phone' => ['required', 'regex:/^\d{11}$/'],
+            'idcardnumber' => ['required', 'unique:staff'],
+            'salary' => 'nullable|numeric',
+            'experience' => 'nullable|integer|min:0',
+            'status' => 'nullable|string',
             'joining_date' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
+            // Get the first error message
+            $firstError = $validator->errors()->first();
+
+            return redirect()
+                ->back()
                 ->withInput()
-                ->with('error', 'Invalid input or email/id card already taken.');
+                ->with('error', $firstError);
         }
 
-        Staff::create($request->all());
+        Staff::create($validator->validated());
 
         return redirect()->back()->with('success', 'Staff added successfully.');
     }
@@ -70,9 +73,9 @@ class StaffController extends Controller
 
         $data = [
             'heading' => 'Staff Management',
-            'title'   => 'Edit Staff',
-            'active'  => 'staff',
-            'staff'   => $staff,
+            'title' => 'Edit Staff',
+            'active' => 'staff',
+            'staff' => $staff,
         ];
 
         return view('admin.staff.edit', $data);
@@ -82,20 +85,21 @@ class StaffController extends Controller
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id'           => 'required|exists:staff,id',
-            'name'         => 'required|string|max:100',
-            'role'         => 'required|string|max:50',
-            'email'        => 'nullable|email',
-            'phone'        => ['required', 'regex:/^\d{11}$/'],
+            'id' => 'required|exists:staff,id',
+            'name' => 'required|string|max:100',
+            'role' => 'required|string|max:50',
+            'email' => 'nullable|email',
+            'phone' => ['required', 'regex:/^\d{11}$/'],
             'idcardnumber' => ['required', 'regex:/^\d{5}-\d{7}-\d{1}$/', 'unique:staff,idcardnumber,' . $request->id],
-            'salary'       => 'nullable|numeric',
-            'experience'   => 'nullable|integer|min:0',
-            'status'       => 'nullable|string',
+            'salary' => 'nullable|numeric',
+            'experience' => 'nullable|integer|min:0',
+            'status' => 'nullable|string',
             'joining_date' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
+            return redirect()
+                ->back()
                 ->withErrors($validator)
                 ->withInput()
                 ->with('error', 'Invalid input or email/id card already taken.');
