@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\AnalysisController;
+use App\Http\Controllers\admin\AnalysisController;
 use App\Http\Controllers\admin\AttendanceController;
 use App\Http\Controllers\admin\AttendenceController;
 use App\Http\Controllers\admin\BookingController;
