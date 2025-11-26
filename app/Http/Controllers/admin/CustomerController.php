@@ -41,7 +41,6 @@ class CustomerController extends Controller
             $request->all(),
             [
                 'name'         => 'required|string|max:255',
-                'email'        => 'email|max:255',
                 'phone'        => 'required|digits:11|unique:customers,phone',
                 'address'      => 'required|string|max:500',
             ]
@@ -84,7 +83,6 @@ class CustomerController extends Controller
             $request->all(),
             [
                 'name'         => 'required|string|max:255',
-                'email'        => 'required|email|max:255',
                 'phone'        => 'required|digits:11|unique:customers,phone,' . $id,
                 'idcardnumber' => [ 'regex:/^\d{5}-\d{7}-\d{1}$/'],
                 'address'      => 'required|string|max:500',

@@ -14,7 +14,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Role</th>
-                                <th>Email</th>
+                                {{-- <th>Email</th> --}}
                                 <th>Phone</th>
                                 <th>ID Card Number</th>
                                 <th>Salary</th>
@@ -30,7 +30,7 @@
                                 <tr>
                                     <td>{{ $s->name }}</td>
                                     <td>{{ $s->role }}</td>
-                                    <td>{{ $s->email }}</td>
+                                    {{-- <td>{{ $s->email }}</td> --}}
                                     <td>{{ $s->phone }}</td>
                                     <td>{{ $s->idcardnumber }}</td>
                                     <td>{{ $s->salary }}</td>

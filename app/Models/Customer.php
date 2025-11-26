@@ -14,5 +14,7 @@ class Customer extends Model
         'phone',
         'address',
         'idcardnumber',
+        'name2',
+        'phone2',
     ];
 }

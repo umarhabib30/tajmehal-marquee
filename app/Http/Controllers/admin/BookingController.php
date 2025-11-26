@@ -320,4 +320,36 @@ class BookingController extends Controller
             'active' => 'booking',
         ]);
     }
+
+    public function printDetails($id)
+    {
+        $booking = Booking::with(['customer', 'dishPackage.dishes', 'payments'])->findOrFail($id);
+
+        // Decode custom dish selection
+        $dishes = [];
+        if (!empty($booking->dishes)) {
+            $dishIds = json_decode($booking->dishes, true);
+            if (is_array($dishIds) && count($dishIds) > 0) {
+                $dishes = \App\Models\Dish::whereIn('id', $dishIds)->get();
+            }
+        }
+
+        // Decode decorations safely
+        $decorations = is_array($booking->decorations)
+            ? $booking->decorations
+            : (json_decode($booking->decorations, true) ?? []);
+
+        // Calculate total paid
+        $totalPaid = $booking->payments->sum('amount');
+
+        return view('admin.bookings.invoice_backup', [
+            'booking' => $booking,
+            'dishes' => $dishes,
+            'decorations' => $decorations,
+            'totalPaid' => $totalPaid,
+            'heading' => 'Booking Invoice',
+            'title' => 'Bookings Invoice',
+            'active' => 'booking',
+        ]);
+    }
 }

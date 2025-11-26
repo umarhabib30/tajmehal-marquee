@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    
+
 <div class="row">
     <!-- ============================================================== -->
     <!-- Customers Table -->
@@ -16,8 +16,8 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Email</th>
                                 <th>Phone</th>
+                                <th>Phone2</th>
                                 <th>ID Card</th>
                                 <th>Address</th>
                                 <th>Edit</th>
@@ -28,8 +28,8 @@
                             @foreach ($values as $value)
                                 <tr>
                                     <td>{{ $value->name }}</td>
-                                    <td>{{ $value->email }}</td>
                                     <td>{{ $value->phone }}</td>
+                                    <td>{{ $value->phone2 ?? 'N/A' }}</td>
                                     <td>{{ $value->idcardnumber }}</td>
                                     <td>{{ $value->address }}</td>
                                     <td>
@@ -37,7 +37,7 @@
                                            class="btn btn-primary btn-sm">Edit</a>
                                     </td>
                                     <td>
-                                        <a href="{{ route('customer.delete', $value->id) }}" 
+                                        <a href="{{ route('customer.delete', $value->id) }}"
                                            class="btn btn-danger btn-sm delete-customer">Delete</a>
                                     </td>
                                 </tr>

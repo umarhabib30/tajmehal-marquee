@@ -23,44 +23,60 @@
                             <div class="form-group col-md-6">
                                 <label for="name" class="col-form-label">Name</label>
                                 <input id="name" name="name" type="text" class="form-control"
-                                       value="{{ old('name', $customer->name) }}" required>
-                                @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+                                    value="{{ old('name', $customer->name) }}" required>
+                                @error('name')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
                             </div>
 
-                            <div class="form-group col-md-6">
+                            {{-- <div class="form-group col-md-6">
                                 <label for="email" class="col-form-label">Email</label>
                                 <input id="email" name="email" type="email" class="form-control"
                                        value="{{ old('email', $customer->email) }}" required>
                                 @error('email') <small class="text-danger">{{ $message }}</small> @enderror
-                            </div>
-                        </div>
+                            </div> --}}
 
-                        <div class="row">
                             <div class="form-group col-md-6">
                                 <label for="phone" class="col-form-label">Phone</label>
-                                <input id="phone" name="phone" type="text" class="form-control"
-                                       maxlength="11" value="{{ old('phone', $customer->phone) }}" required>
-                                @error('phone') <small class="text-danger">{{ $message }}</small> @enderror
+                                <input id="phone" name="phone" type="text" class="form-control" maxlength="11"
+                                    value="{{ old('phone', $customer->phone) }}" required>
+                                @error('phone')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
                             </div>
 
                             <div class="form-group col-md-6">
                                 <label for="idcardnumber" class="col-form-label">ID Card Number</label>
                                 <input id="idcardnumber" name="idcardnumber" type="text" class="form-control"
-                                       maxlength="15" value="{{ old('idcardnumber', $customer->idcardnumber) }}" required>
-                                @error('idcardnumber') <small class="text-danger">{{ $message }}</small> @enderror
+                                    maxlength="15" value="{{ old('idcardnumber', $customer->idcardnumber) }}" required>
+                                @error('idcardnumber')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
                             </div>
-                        </div>
 
-                        <div class="row">
                             <div class="form-group col-md-6">
                                 <label for="address" class="col-form-label">Address</label>
                                 <input id="address" name="address" type="text" class="form-control"
-                                       value="{{ old('address', $customer->address) }}" required>
-                                @error('address') <small class="text-danger">{{ $message }}</small> @enderror
+                                    value="{{ old('address', $customer->address) }}" required>
+                                @error('address')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
                             </div>
+
+
+                                <div class="col-md-6">
+                                    <label for="2ndname" class="col-form-label">Name 2 <small>(optional)</small></label>
+                                    <input id="2ndname" name="name2" type="text" class="form-control"
+                                        placeholder="Enter 2nd person name" value="{{ $customer->name2 ?? '' }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="phone2" class="col-form-label">Phone 2</label>
+                                    <input id="phone2" name="phone2" type="text" class="form-control"
+                                        placeholder="Enter 2nd person phone" value="{{ $customer->phone2 ?? '' }}" required>
+                                </div>
                         </div>
 
-                        <div >
+                        <div class="mt-3">
                             <button type="submit" class="btn btn-primary px-5">Update Customer</button>
                         </div>
                     </form>
@@ -71,28 +87,28 @@
 @endsection
 
 @section('script')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
 
-    const phoneEl = document.getElementById('phone');
-    phoneEl.addEventListener('input', function() {
-        this.value = this.value.replace(/[^0-9]/g, '');
-        if (this.value.length > 11) {
-            this.value = this.value.slice(0, 11);
-        }
-    });
+            const phoneEl = document.getElementById('phone');
+            phoneEl.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                if (this.value.length > 11) {
+                    this.value = this.value.slice(0, 11);
+                }
+            });
 
-    const idEl = document.getElementById('idcardnumber');
-    idEl.addEventListener('input', function() {
-        let v = this.value.replace(/[^0-9]/g, '');
-        if (v.length > 5 && v.length <= 12) {
-            v = v.replace(/(\d{5})(\d+)/, "$1-$2");
-        }
-        if (v.length > 12) {
-            v = v.replace(/(\d{5})(\d{7})(\d+)/, "$1-$2-$3");
-        }
-        this.value = v;
-    });
-});
-</script>
+            const idEl = document.getElementById('idcardnumber');
+            idEl.addEventListener('input', function() {
+                let v = this.value.replace(/[^0-9]/g, '');
+                if (v.length > 5 && v.length <= 12) {
+                    v = v.replace(/(\d{5})(\d+)/, "$1-$2");
+                }
+                if (v.length > 12) {
+                    v = v.replace(/(\d{5})(\d{7})(\d+)/, "$1-$2-$3");
+                }
+                this.value = v;
+            });
+        });
+    </script>
 @endsection

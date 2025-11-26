@@ -87,6 +87,8 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
         Route::get('/bookings/invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
         Route::get('/booking/create/{id}', [BookingController::class, 'create'])->name('booking.createWithCustomer');
         Route::post('booking/extra-guest', [BookingController::class, 'extraGuest'])->name('booking.extraGuest');
+
+        Route::get('booking/details/print/{id}', [BookingController::class, 'printDetails'])->name('booking.details.print');
     });
 
     Route::prefix('admin')->group(function () {

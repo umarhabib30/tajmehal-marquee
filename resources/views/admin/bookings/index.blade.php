@@ -20,6 +20,7 @@
                                     <th>Event Date</th>
                                     <th>Payment Status</th>
                                     <th>Details</th>
+                                    <th>Print Details</th>
                                     <th>Invoice</th>
                                     <th>Edit</th>
                                     <th>Delete</th>
@@ -59,6 +60,12 @@
                                             <a href="{{ route('admin.booking.invoice', $booking->id) }}"
                                                 class="btn btn-sm btn-primary text-white">
                                                 Invoice
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('admin.booking.details.print', $booking->id) }}"
+                                                class="btn btn-sm btn-primary text-white">
+                                                Print Details
                                             </a>
                                         </td>
                                         <td>
