@@ -56,12 +56,12 @@
 
         header h2 {
             margin: 0;
-            color: #29166f ;
+            color: #29166f;
             font-weight: 700;
         }
 
         .section-header {
-            background: #29166f ;
+            background: #29166f;
             color: #fff;
             font-size: 14px;
             /* increased from 12px */
@@ -127,7 +127,8 @@
     <div class="page">
         <header class="pb-2 border-bottom mb-3 d-flex justify-content-between align-items-center">
             <div class="logo-box">
-                <img src="{{ asset('assets/images/logo.jpg') }}" alt="Taj Mahal Marquee Logo" style="height: 80px; width: auto;">
+                <img src="{{ asset('assets/images/logo.jpg') }}" alt="Taj Mahal Marquee Logo"
+                    style="height: 80px; width: auto;">
             </div>
 
             <div class="text-end">
@@ -232,20 +233,35 @@
                     </p>
                 </div>
             </div>
-
             <div class="col-6">
                 <div class="border-rounded bg-light-subtle p-2 small-text">
                     <div class="section-header mb-1">Payment Summary</div>
                     <table class="table table-bordered table-sm text-end mb-0">
                         <tbody>
                             <tr>
+                                <th class="text-start">Price Per Head</th>
+                                <td>₨ {{ number_format($booking->per_head_price, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-start">Decoration Charges</th>
+                                <td>₨ {{ number_format($booking->decore_price, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-start">Tax</th>
+                                <td>₨ {{ number_format($booking->tax_amount, 2) }}</td>
+                            </tr>
+                            <tr>
                                 <th class="text-start">Total Amount</th>
                                 <td>₨ {{ number_format($booking->total_amount, 2) }}</td>
                             </tr>
+
+
+
                             <tr>
                                 <th class="text-start">Total Paid</th>
                                 <td>₨ {{ number_format($totalPaid, 2) }}</td>
                             </tr>
+
                             <tr class="table-warning fw-bold">
                                 <th class="text-start">Remaining</th>
                                 <td>₨ {{ number_format($booking->remaining_amount, 2) }}</td>
@@ -254,6 +270,7 @@
                     </table>
                 </div>
             </div>
+
         </div>
 
         @if ($booking->payments->count() > 0)

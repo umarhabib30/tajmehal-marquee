@@ -306,21 +306,21 @@
                             </li>
 
                             {{-- for attendece --}}
-                            <li class="nav-item">
+                            {{-- <li class="nav-item">
                                 <a class="nav-link @if ($active == 'attendence') active @endif"
                                     href="{{ route('attendence.index') }}">
                                     <i class="fa fa-fw fa-user-check"></i> Attendance
                                 </a>
-                            </li>
+                            </li> --}}
                             {{-- for salaery --}}
-                            <li class="nav-item">
+                            {{-- <li class="nav-item">
                                 <a class="nav-link @if ($active == 'salary') active @endif"
                                     href="{{ route('admin.salary.index') }}">
                                     <i class="fa fa-fw fa-money-bill"></i> Salary
                                 </a>
-                            </li>
+                            </li> --}}
 
-                             <li class="nav-item">
+                             {{-- <li class="nav-item">
                                 <a class="nav-link @if ($active == 'analysis') active @endif" href="#"
                                     data-toggle="collapse" aria-expanded="false" data-target="#analysis-submenu"
                                     aria-controls="analysis-submenu">
@@ -336,7 +336,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                            </li>
+                            </li> --}}
 
 
 
