@@ -110,7 +110,7 @@ class BookingController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('success', 'Booking created successfully');
+        return redirect()->route('admin.booking.details.print',$booking->id)->with('success', 'Booking created successfully');
     }
 
     // Show single booking

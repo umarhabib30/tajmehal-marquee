@@ -277,13 +277,20 @@
                                 </a>
                                 <div id="submenu-inventory" class="collapse submenu">
                                     <ul class="nav flex-column">
-                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.create') }}">Add New</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.index') }}">All Items</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.food') }}">Food Items</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.electronics') }}">Electronics Items</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.furniture') }}">Furniture Items</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.crockery') }}">Crockery Items</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="{{ route('inventory.decoration') }}">Decoration Items</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('inventory.create') }}">Add New</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('inventory.index') }}">All Items</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('inventory.food') }}">Food Items</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('inventory.electronics') }}">Electronics Items</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('inventory.furniture') }}">Furniture Items</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('inventory.crockery') }}">Crockery Items</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('inventory.decoration') }}">Decoration Items</a></li>
                                     </ul>
                                 </div>
                             </li>
@@ -320,7 +327,7 @@
                                 </a>
                             </li>
 
-                             <li class="nav-item">
+                            <li class="nav-item">
                                 <a class="nav-link @if ($active == 'analysis') active @endif" href="#"
                                     data-toggle="collapse" aria-expanded="false" data-target="#analysis-submenu"
                                     aria-controls="analysis-submenu">
@@ -329,10 +336,12 @@
                                 <div id="analysis-submenu" class="collapse submenu">
                                     <ul class="nav flex-column">
                                         <li class="nav-item">
-                                            <a class="nav-link" href="{{ route('admin.analysis.booking') }}">Booking Analysis</a>
+                                            <a class="nav-link" href="{{ route('admin.analysis.booking') }}">Booking
+                                                Analysis</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="{{ route('admin.analysis.inventory') }}">Inventory Analysis</a>
+                                            <a class="nav-link"
+                                                href="{{ route('admin.analysis.inventory') }}">Inventory Analysis</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -345,7 +354,7 @@
                 </nav>
             </div>
         </div>
- 
+
         <!-- ============================================================== -->
         <!-- Main Content -->
         <!-- ============================================================== -->
