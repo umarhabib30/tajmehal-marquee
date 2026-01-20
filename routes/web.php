@@ -12,6 +12,7 @@ use App\Http\Controllers\admin\InventoryController;
 use App\Http\Controllers\admin\SalaryController;
 use App\Http\Controllers\admin\StaffController;
 use App\Http\Controllers\DashboardController;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -124,3 +125,4 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
     Route::get('/admin/analysis/bookings', [AnalysisController::class, 'booking'])->name('admin.analysis.booking');
     Route::get('/admin/analysis/inventory', [AnalysisController::class, 'inventory'])->name('admin.analysis.inventory');
 });
+

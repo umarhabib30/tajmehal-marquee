@@ -84,8 +84,7 @@ class BookingController extends Controller
         $validated['tax_amount'] = $request->tax_amount ?? 0;
         $validated['advance_payment'] = $request->advance_payment ?? 0;
         // ✅ DUPLICATE CHECK
-        $duplicate = Booking::where('customer_id', $request->customer_id)
-            ->whereDate('event_date', $request->event_date)
+        $duplicate = Booking::whereDate('event_date', $request->event_date)
             ->where('hall_name', $request->hall_name)
             ->where('time_slot', $request->time_slot)
             ->first();
@@ -94,8 +93,9 @@ class BookingController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'A booking already exists for this customer, hall, date, and time slot.');
+                ->with('error', 'This hall is already booked for this date and time slot.');
         }
+
 
         // ✅ Create the booking
         $booking = Booking::create($validated);
@@ -194,8 +194,26 @@ class BookingController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        // ✅ Duplicate validation (same hall + same date + same time slot not allowed)
+        $duplicate = Booking::whereDate('event_date', $request->event_date)
+            ->where('hall_name', $request->hall_name)
+            ->where('time_slot', $request->time_slot)
+            ->where('id', '!=', $request->id) // ✅ ignore current record
+            ->first();
+
+        if ($duplicate) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'This hall is already booked for this date and time slot.');
+        }
+
+        // 🧠 Convert JSON fields
         $validated['dishes'] = $request->filled('dishes') ? $request->dishes : json_encode([]);
-        $validated['decorations'] = $request->filled('decorations') ? json_encode($request->decorations) : json_encode([]);
+        $validated['decorations'] = $request->filled('decorations')
+            ? json_encode($request->decorations)
+            : json_encode([]);
+
         $validated['decore_price'] = $request->decore_price ?? 0;
         $validated['tax_amount'] = $request->tax_amount ?? 0;
         $validated['advance_payment'] = $request->advance_payment ?? 0;
@@ -205,6 +223,7 @@ class BookingController extends Controller
 
         return redirect()->route('admin.booking.index')->with('success', 'Booking updated successfully');
     }
+
 
     // Delete booking
     public function destroy($id)

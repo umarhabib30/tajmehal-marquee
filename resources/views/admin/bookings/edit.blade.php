@@ -259,7 +259,7 @@
         document.getElementById('customer_id').addEventListener('change', function() {
             const selected = this.options[this.selectedIndex];
             document.querySelector('input[name="customer_phone"]').value = selected.getAttribute('data-phone') ||
-            '';
+                '';
             document.querySelector('input[name="customer_idcard"]').value = selected.getAttribute('data-idcard') ||
                 '';
             document.querySelector('input[name="customer_address"]').value = selected.getAttribute(
@@ -420,11 +420,18 @@
         });
 
         // Load existing dishes on page load
+        // Load existing dishes on page load (FIXED)
         document.addEventListener('DOMContentLoaded', function() {
-            const existing = @json($booking->dishes ?? []);
-            selectedDishes = allDishes.filter(d => existing.includes(d.id));
+            const existing = (@json($booking->dishes ?? [])).map(Number);
+
+            selectedDishes = allDishes.filter(d =>
+                existing.includes(Number(d.id))
+            );
+
             renderSelectedDishes();
+            updateDishesInput(); // ✅ VERY IMPORTANT
         });
+
 
         // ===================== Validation =====================
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
