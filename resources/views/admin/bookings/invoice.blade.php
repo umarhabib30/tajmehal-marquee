@@ -5,7 +5,7 @@
         <div class="offset-xl-2 col-xl-8 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="card">
                 <div class="card-header p-4">
-                    <a class="pt-2 d-inline-block" >
+                    <a class="pt-2 d-inline-block">
                         <img src="{{ asset('assets/images/logo.jpg') }}" alt="Logo" style="height:60px;">
                         <span class="ml-2 font-weight-bold text-dark" style="font-size: 25px;">The Taj Mahal Marquee</span>
                     </a>
@@ -103,6 +103,23 @@
                             </table>
                         </div>
                     </div>
+                    {{-- NOTES --}}
+                    @if (!empty($booking->notes))
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card border-0">
+                                    <div class="card-header bg-light text-dark">
+                                        <strong>Notes</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-0" style="white-space: pre-line;">
+                                            {{ $booking->notes }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
 
 
                     {{-- PAYMENT HISTORY --}}
@@ -293,8 +310,8 @@
                 const mediaQuery = window.matchMedia('print');
                 const handleChange = e => {
                     if (!e.matches) {
-                        
-                          window.location.reload();
+
+                        window.location.reload();
                         mediaQuery.removeEventListener('change', handleChange);
                     }
                 };
@@ -306,7 +323,7 @@
 
                 window.onafterprint = () => {
                     clearTimeout(restoreTimeout);
-                    
+
                     window.location.reload();
                     window.onafterprint = null;
                 };

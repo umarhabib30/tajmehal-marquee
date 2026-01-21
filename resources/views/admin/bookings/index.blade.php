@@ -19,11 +19,14 @@
                                     <th>Hall</th>
                                     <th>Event Date</th>
                                     <th>Payment Status</th>
+                                    <th>Status</th>
                                     <th>Details</th>
                                     <th>Print Details</th>
                                     <th>Invoice</th>
                                     <th>Edit</th>
-                                    <th>Delete</th>
+                                    <th>Add Payments</th>
+
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -50,6 +53,13 @@
                                                 {{ number_format($totalAmount, 0) }}
                                             </small>
                                         </td>
+                                        <td>
+                                            <span
+                                                class="badge {{ $booking->status == 'Active' ? 'bg-success' : 'bg-danger' }}">
+                                                {{ $booking->status }}
+                                            </span>
+                                        </td>
+
                                         <td>
                                             <a href="{{ route('admin.booking.show', $booking->id) }}"
                                                 class="btn btn-sm btn-primary text-white">

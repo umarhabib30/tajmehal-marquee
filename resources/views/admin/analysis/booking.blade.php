@@ -96,6 +96,8 @@
                     <tr>
                         <th>Month</th>
                         <th>Bookings</th>
+                        <th>Total Guests</th>
+
                         <th>Total Sales (₨)</th>
                         <th>Total Paid (₨)</th>
                         <th>Pending (₨)</th>
@@ -106,6 +108,8 @@
                         <tr>
                             <td>{{ $month }}</td>
                             <td>{{ $monthlyBookings[$index] }}</td>
+                            <td>{{ $monthlyGuests[$index] }}</td>
+
                             <td>{{ number_format($monthlySales[$index]) }}</td>
                             <td>{{ number_format($monthlyPaid[$index]) }}</td>
                             <td>{{ number_format($monthlyPending[$index]) }}</td>

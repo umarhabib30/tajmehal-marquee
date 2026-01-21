@@ -21,15 +21,19 @@ class AnalysisController extends Controller
         $analysis = Booking::select(
             DB::raw('MONTH(event_date) as month'),
             DB::raw('COUNT(id) as total_bookings'),
+            DB::raw('SUM(guests_count) as total_guests'), // ✅ NEW
             DB::raw('SUM(total_amount) as total_sales'),
             DB::raw('SUM(total_amount - remaining_amount) as total_paid'),
             DB::raw('SUM(remaining_amount) as total_pending')
         )
             ->whereYear('event_date', $year)
+            ->where('status', 'Active') // ✅ only active
             ->groupBy(DB::raw('MONTH(event_date)'))
             ->orderBy(DB::raw('MONTH(event_date)'))
             ->get()
             ->keyBy('month');
+
+
 
         // Prepare chart data
         $chartMonths = [];
@@ -38,10 +42,13 @@ class AnalysisController extends Controller
         $monthlyPaid = [];
         $monthlyPending = [];
 
+        $monthlyGuests = [];
+
         foreach (range(1, 12) as $m) {
             $chartMonths[] = Carbon::create()->month($m)->format('M');
             $monthlySales[] = $analysis[$m]->total_sales ?? 0;
             $monthlyBookings[] = $analysis[$m]->total_bookings ?? 0;
+            $monthlyGuests[] = $analysis[$m]->total_guests ?? 0; // ✅ NEW
             $monthlyPaid[] = $analysis[$m]->total_paid ?? 0;
             $monthlyPending[] = $analysis[$m]->total_pending ?? 0;
         }
@@ -57,6 +64,9 @@ class AnalysisController extends Controller
 
         // Return data to view
         $data = [
+            'monthlyGuests' => $monthlyGuests,
+            'totalGuests' => array_sum($monthlyGuests),
+
             'year' => $year,
             'chartMonths' => $chartMonths,
             'monthlySales' => $monthlySales,

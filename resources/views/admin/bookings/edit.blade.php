@@ -238,15 +238,25 @@
                             class="form-control bg-light" value="{{ $booking->remaining_amount }}" readonly>
                     </div>
 
-                    <div class="col-12">
+                    <div class="col-8">
                         <label class="form-label fw-bold">Notes</label>
                         <textarea name="notes" class="form-control" rows="3">{{ $booking->notes }}</textarea>
+                    </div>
+                     <div class="col-md-4">
+                        <label class="form-label fw-bold">Status</label>
+                        <select name="status" class="form-control">
+                            <option value="Active" {{ $booking->status == 'Active' ? 'selected' : '' }}>Active</option>
+                            <option value="Cancelled" {{ $booking->status == 'Cancelled' ? 'selected' : '' }}>Cancelled
+                            </option>
+                        </select>
                     </div>
 
                     <div class="col-12 text-end">
                         <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i> Update
                             Booking</button>
                     </div>
+                   
+
                 </div>
             </form>
         </div>

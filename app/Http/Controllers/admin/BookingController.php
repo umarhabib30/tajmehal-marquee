@@ -74,6 +74,8 @@ class BookingController extends Controller
             'customer_signature' => 'nullable|string',
             'manager_signature' => 'nullable|string',
             'notes' => 'nullable|string',
+            'status' => 'nullable|in:Active,Cancelled',
+
         ]);
 
         // 🧠 Convert JSON/Array fields
@@ -83,6 +85,8 @@ class BookingController extends Controller
         $validated['decore_price'] = $request->decore_price ?? 0;
         $validated['tax_amount'] = $request->tax_amount ?? 0;
         $validated['advance_payment'] = $request->advance_payment ?? 0;
+        $validated['status'] = $request->status ?? 'Active';
+
         // ✅ DUPLICATE CHECK
         $duplicate = Booking::whereDate('event_date', $request->event_date)
             ->where('hall_name', $request->hall_name)
@@ -192,6 +196,8 @@ class BookingController extends Controller
             'customer_signature' => 'nullable|string',
             'manager_signature' => 'nullable|string',
             'notes' => 'nullable|string',
+            'status' => 'required|in:Active,Cancelled',
+
         ]);
 
         // ✅ Duplicate validation (same hall + same date + same time slot not allowed)

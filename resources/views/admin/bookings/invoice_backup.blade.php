@@ -182,7 +182,7 @@
                             </tr>
                             <tr>
                                 <th>Date</th>
-                                <td>{{\Carbon\Carbon::parse( $booking->event_date )->format('d-M-Y')}}</td>
+                                <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('d-M-Y') }}</td>
                             </tr>
                             <tr>
                                 <th>Slot</th>
@@ -272,6 +272,16 @@
             </div>
 
         </div>
+        {{-- NOTES --}}
+        @if (!empty($booking->notes))
+            <div class="border-rounded bg-light-subtle mt-2 p-2 small-text">
+                <div class="section-header mb-1">Notes</div>
+                <div class="bg-white p-2 border-rounded" style="white-space: pre-line;">
+                    {{ $booking->notes }}
+                </div>
+            </div>
+        @endif
+
 
         @if ($booking->payments->count() > 0)
             <div class="border-rounded mt-2 bg-white p-2 small-text">

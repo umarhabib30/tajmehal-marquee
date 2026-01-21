@@ -37,6 +37,8 @@ class Booking extends Model
         'booking_date',
         'extra_guests',
         'extra_guest_per_head_price',
+        'status',
+
     ];
 
     public function customer()
