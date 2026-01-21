@@ -24,6 +24,8 @@
                                     <th>Print Details</th>
                                     <th>Invoice</th>
                                     <th>Edit</th>
+                                    <th>Delete</th>
+
                                     <th>Add Payments</th>
 
 
@@ -84,6 +86,14 @@
                                                 Edit
                                             </a>
                                         </td>
+                                       
+<td>
+    <button class="btn btn-sm btn-danger delete-btn"
+        data-url="{{ route('admin.booking.delete', $booking->id) }}">
+        <i class="fa fa-trash"></i> Delete
+    </button>
+</td>
+
                                         <td>
                                             <a class="btn btn-sm btn-success add-payment-btn"
                                                 href="{{ route('admin.booking.addPaymentPage', $booking->id) }}">

@@ -80,7 +80,7 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
         Route::get('booking/show/{id}', [BookingController::class, 'show'])->name('booking.show');
         Route::get('booking/edit/{id}', [BookingController::class, 'edit'])->name('booking.edit');
         Route::post('booking/update', [BookingController::class, 'update'])->name('booking.update');
-        Route::get('booking/delete/{id}', [BookingController::class, 'destroy'])->name('booking.delete');
+       
         Route::get('booking/customer/{id}', [BookingController::class, 'getCustomer'])->name('booking.getCustomer');
         Route::get('booking/package-dishes/{id}', [BookingController::class, 'getPackageDishes'])->name('booking.getPackageDishes');
         Route::get('/booking/add-payment/{id}', [BookingController::class, 'addPaymentPage'])->name('booking.addPaymentPage');
@@ -90,6 +90,7 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
         Route::post('booking/extra-guest', [BookingController::class, 'extraGuest'])->name('booking.extraGuest');
 
         Route::get('booking/details/print/{id}', [BookingController::class, 'printDetails'])->name('booking.details.print');
+        Route::get('booking/delete/{id}', [BookingController::class, 'destroy'])->name('booking.delete');
     });
 
     Route::prefix('admin')->group(function () {

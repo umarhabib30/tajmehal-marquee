@@ -231,14 +231,7 @@ class BookingController extends Controller
     }
 
 
-    // Delete booking
-    public function destroy($id)
-    {
-        $booking = Booking::findOrFail($id);
-        $booking->delete();
-
-        return redirect()->back()->with('success', 'Booking deleted successfully');
-    }
+   
 
     // AJAX - get customer details
     public function getCustomer($id)
@@ -376,5 +369,22 @@ class BookingController extends Controller
             'title' => 'Bookings Invoice',
             'active' => 'booking',
         ]);
+    }
+    public function destroy($id)
+    {
+        try {
+            $booking = Booking::findOrFail($id);
+            $booking->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete booking.'
+            ]);
+        }
     }
 }
