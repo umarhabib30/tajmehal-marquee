@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Inventory;
@@ -71,9 +71,9 @@ class InventoryController extends Controller
             $query->orderBy('date', 'desc');
         }])->findOrFail($id);
 
-        // Calculate totals
-        $total_in = $inventory->stocks->sum('quantity_in');
-        $total_out = $inventory->stocks->sum('quantity_out');
+        // Calculate totals (decimals safe)
+        $total_in = (float) $inventory->stocks->sum('quantity_in');
+        $total_out = (float) $inventory->stocks->sum('quantity_out');
         $current_stock = $total_in - $total_out;
 
         $data = [
@@ -94,35 +94,45 @@ class InventoryController extends Controller
     {
         $request->validate([
             'type' => 'required|in:add,take',
-            'quantity' => 'required|integer|min:1',
-            'price_per_unit' => 'nullable|integer|min:0',
+            'quantity' => 'required|numeric|min:0.01',
+            'price_per_unit' => 'nullable|numeric|min:0',
             'id' => 'required|exists:inventories,id',
+            // optional fields (if you send them from form)
+            'warranty_period' => 'nullable|string|max:255',
+            'supplier_name' => 'nullable|string|max:255',
         ]);
 
         $inventory = Inventory::findOrFail($request->id);
 
+        $qty = (float) $request->quantity;
+        $available = (float) $inventory->quantity;
+
+        // message unit (Pieces / Kg)
+        $unit = $inventory->quantity_type;
+
         // 🔍 Check available stock before taking
-        if ($request->type === 'take' && $request->quantity > $inventory->quantity) {
-            return redirect()->back()->with('error', "Available stock is only {$inventory->quantity} kg.");
+        if ($request->type === 'take' && $qty > $available) {
+            return redirect()->back()->with('error', "Available stock is only {$available} {$unit}.");
         }
 
-        // Record transaction
+        // Record transaction (store decimals)
         InventoryStock::create([
             'inventory_id' => $inventory->id,
             'date' => now(),
-            'quantity_in' => $request->type === 'add' ? $request->quantity : 0,
-            'quantity_out' => $request->type === 'take' ? $request->quantity : 0,
+            'quantity_in' => $request->type === 'add' ? $qty : 0,
+            'quantity_out' => $request->type === 'take' ? $qty : 0,
             'price_per_unit' => $request->price_per_unit,
             'warranty_period' => $request->warranty_period ?? null,
             'supplier_name' => $request->supplier_name ?? null,
         ]);
 
-        // Update main inventory quantity
+        // Update main inventory quantity (decimals safe)
         if ($request->type === 'add') {
-            $inventory->increment('quantity', $request->quantity);
+            $inventory->quantity = $available + $qty;
         } else {
-            $inventory->decrement('quantity', $request->quantity);
+            $inventory->quantity = $available - $qty;
         }
+        $inventory->save();
 
         return redirect()->back()->with('success', 'Stock updated successfully.');
     }
@@ -176,6 +186,7 @@ class InventoryController extends Controller
             'name' => 'required|string|max:255',
             'category' => 'required|in:Food,Electronics,Furniture,Decoration,Crockery',
             'quantity_type' => 'required|in:Pieces,Kg',
+            'quantity' => 'nullable|numeric|min:0',
         ]);
 
         // If validation fails
@@ -188,7 +199,7 @@ class InventoryController extends Controller
             return redirect()->back()->with('error', 'Inventory item with this name already exists.')->withInput();
         }
 
-        // Create record
+        // Create record (decimal safe)
         Inventory::create([
             'name' => $request->name,
             'category' => $request->category,
@@ -224,7 +235,7 @@ class InventoryController extends Controller
             'name' => 'required|string|max:255',
             'category' => 'required|in:Food,Electronics,Furniture,Decoration,Crockery',
             'quantity_type' => 'required|in:Pieces,Kg',
-            'quantity' => 'required|integer|min:0',
+            'quantity' => 'required|numeric|min:0',
         ]);
 
         // Return only the first validation error
@@ -248,7 +259,7 @@ class InventoryController extends Controller
                 ->withInput();
         }
 
-        // Update inventory
+        // Update inventory (decimal safe)
         $inventory->update([
             'name' => $request->name,
             'category' => $request->category,

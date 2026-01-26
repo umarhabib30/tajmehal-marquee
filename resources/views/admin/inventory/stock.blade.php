@@ -22,13 +22,13 @@
                     @endif
 
                     {{-- Error Message --}}
-                    @if ($errors->has('error'))
+                    @if (session('error'))
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Error!',
-                                    text: '{{ $errors->first('error') }}',
+                                    text: '{{ session('error') }}',
                                 });
                             });
                         </script>
@@ -60,12 +60,12 @@
 
                             <div class="col-md-3">
                                 <label>Quantity</label>
-                                <input type="number" name="quantity" class="form-control" min="1" required>
+                                <input type="number" name="quantity" class="form-control" step="0.01" min="0.01" required>
                             </div>
 
                             <div class="col-md-3" id="price_col">
                                 <label>Price Per Unit</label>
-                                <input type="number" name="price_per_unit" class="form-control">
+                                <input type="number" name="price_per_unit" class="form-control" step="0.01" min="0">
                             </div>
 
                             <div class="col-md-3" id="supplier_group">

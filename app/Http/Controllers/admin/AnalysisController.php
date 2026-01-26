@@ -96,9 +96,46 @@ class AnalysisController extends Controller
         // Get inventory items filtered by category
         $items = Inventory::where('category', $category)->get();
 
-        // Prepare arrays for chart and summary
+        /**
+         * Build per-item stats first, then sort and pick top 10
+         * "Most using inventory" = highest total_out (most consumed)
+         */
+        $rows = [];
+
+        foreach ($items as $item) {
+            $stocks = InventoryStock::where('inventory_id', $item->id)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->select(
+                    DB::raw('COALESCE(SUM(quantity_in),0) as total_in'),
+                    DB::raw('COALESCE(SUM(quantity_out),0) as total_out'),
+                    DB::raw('COALESCE(SUM(quantity_in * price_per_unit),0) as total_price')
+                )
+                ->first();
+
+            $totalIn = (float) ($stocks->total_in ?? 0);
+            $totalOut = (float) ($stocks->total_out ?? 0);
+            $totalPrice = (float) ($stocks->total_price ?? 0);
+            $currentQty = (float) ($item->quantity ?? 0);
+
+            $rows[] = [
+                'name' => $item->name,
+                'total_in' => $totalIn,
+                'total_out' => $totalOut,
+                'total_price' => $totalPrice,
+                'current_qty' => $currentQty,
+            ];
+        }
+
+        // ✅ Sort by "most used" (total_out) desc, then take top 10
+        usort($rows, function ($a, $b) {
+            return $b['total_out'] <=> $a['total_out'];
+        });
+
+        $topRows = array_slice($rows, 0, 10);
+
+        // Prepare arrays for chart and summary (ONLY top 10)
         $labels = [];
-        $perItemPurchase = [];  // total purchase amount (price * quantity_in)
+        $perItemPurchase = [];
         $perItemQtyIn = [];
         $perItemQtyOut = [];
         $perItemRemain = [];
@@ -107,42 +144,30 @@ class AnalysisController extends Controller
         $totalQtyOut = 0;
         $totalPurchaseAmt = 0;
 
-        foreach ($items as $item) {
-            $stocks = InventoryStock::where('inventory_id', $item->id)
-                ->whereBetween('date', [$startDate, $endDate])
-                ->select(
-                    DB::raw('SUM(quantity_in) as total_in'),
-                    DB::raw('SUM(quantity_out) as total_out'),
-                    DB::raw('SUM(quantity_in * price_per_unit) as total_price')
-                )
-                ->first();
+        foreach ($topRows as $r) {
+            $labels[] = $r['name'];
+            $perItemQtyIn[] = $r['total_in'];
+            $perItemQtyOut[] = $r['total_out'];
+            $perItemPurchase[] = $r['total_price'];
+            $perItemRemain[] = $r['current_qty'];
 
-            $totalIn = $stocks->total_in ?? 0;
-            $totalOut = $stocks->total_out ?? 0;
-            $totalPrice = $stocks->total_price ?? 0;
-            $currentQty = $item->quantity ?? 0;
-
-            $labels[] = $item->name;
-            $perItemQtyIn[] = $totalIn;
-            $perItemQtyOut[] = $totalOut;
-            $perItemPurchase[] = $totalPrice;
-            $perItemRemain[] = $currentQty;
-
-            $totalQtyIn += $totalIn;
-            $totalQtyOut += $totalOut;
-            $totalPurchaseAmt += $totalPrice;
+            $totalQtyIn += $r['total_in'];
+            $totalQtyOut += $r['total_out'];
+            $totalPurchaseAmt += $r['total_price'];
         }
 
-        // Prepare data array for the view
         $data = [
             'year' => now()->year,
-            'chartMonths' => $labels,  // item names
-            'monthlySales' => $perItemPurchase,  // total purchase per item
-            'monthlyBookings' => $perItemQtyIn,  // total quantity in
-            'monthlyPaid' => $perItemQtyOut,  // total quantity out
-            'monthlyPending' => $perItemRemain,  // remaining quantity in inventory
-            'totalPaid' => $totalQtyIn,  // total quantity in (for donut)
-            'totalPending' => $totalQtyOut,  // total quantity out (for donut)
+            'chartMonths' => $labels,          // item names (top 10)
+            'monthlySales' => $perItemPurchase, // total purchase per item (top 10)
+            'monthlyBookings' => $perItemQtyIn, // total quantity in (top 10)
+            'monthlyPaid' => $perItemQtyOut,    // total quantity out (top 10)
+            'monthlyPending' => $perItemRemain, // remaining quantity (top 10)
+
+            // Donut / totals (top 10 totals)
+            'totalPaid' => $totalQtyIn,
+            'totalPending' => $totalQtyOut,
+
             'totalPurchaseAmt' => $totalPurchaseAmt,
             'category' => $category,
             'categories' => $categories,
@@ -153,7 +178,6 @@ class AnalysisController extends Controller
             'title' => 'Analysis Dashboard',
         ];
 
-        // Reuse your booking analysis blade (or change to a dedicated inventory view)
         return view('admin.analysis.inventory', $data);
     }
 }
