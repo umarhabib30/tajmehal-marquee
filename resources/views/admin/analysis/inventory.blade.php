@@ -2,10 +2,7 @@
 
 @section('content')
 <style>
-    :root {
-        --main-color: #29166f;
-    }
-
+    :root { --main-color: #29166f; }
     h3.fw-bold { color: var(--main-color); }
 
     .card-header {
@@ -56,7 +53,9 @@
     <div class="row g-3">
         <div class="col-md-8">
             <div class="card">
-                <h5 class="card-header">Item Quantity In vs Out ({{ $startDate }} to {{ $endDate }})</h5>
+                <h5 class="card-header">
+                    Item Quantity In vs Out ({{ $startDate }} to {{ $endDate }}) - Top 10
+                </h5>
                 <div class="card-body">
                     <canvas id="inventoryBarChart" height="150"></canvas>
                 </div>
@@ -79,7 +78,7 @@
     </div>
 
     <div class="card mt-4">
-        <h5 class="card-header">Item-wise Summary</h5>
+        <h5 class="card-header">Item-wise Summary (All Items)</h5>
         <div class="table-responsive">
             <table class="table table-bordered table-striped mb-0">
                 <thead>
@@ -95,10 +94,10 @@
                     @foreach($chartMonths as $index => $itemName)
                         <tr>
                             <td>{{ $itemName }}</td>
-                            <td>{{ $monthlyBookings[$index] }}</td>
-                            <td>{{ $monthlyPaid[$index] }}</td>
-                            <td>{{ number_format($monthlySales[$index]) }}</td>
-                            <td>{{ $monthlyPending[$index] }}</td>
+                            <td>{{ $monthlyBookings[$index] ?? 0 }}</td>
+                            <td>{{ $monthlyPaid[$index] ?? 0 }}</td>
+                            <td>{{ number_format($monthlySales[$index] ?? 0) }}</td>
+                            <td>{{ $monthlyPending[$index] ?? 0 }}</td>
                         </tr>
                     @endforeach
 
@@ -121,17 +120,17 @@ const ctxBar = document.getElementById('inventoryBarChart').getContext('2d');
 new Chart(ctxBar, {
     type: 'bar',
     data: {
-        labels: @json($chartMonths),
+        labels: @json($chartMonthsTop10),
         datasets: [
             {
                 label: 'Quantity In',
-                data: @json($monthlyBookings),
+                data: @json($monthlyBookingsTop10),
                 backgroundColor: mainColor,
                 borderRadius: 5
             },
             {
                 label: 'Quantity Out',
-                data: @json($monthlyPaid),
+                data: @json($monthlyPaidTop10),
                 backgroundColor: 'rgba(41, 22, 111, 0.3)',
                 borderColor: mainColor,
                 borderWidth: 2
@@ -144,13 +143,6 @@ new Chart(ctxBar, {
             legend: {
                 position: 'bottom',
                 labels: { color: mainColor }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.dataset.label + ': ' + context.parsed.y;
-                    }
-                }
             }
         },
         scales: {

@@ -17,52 +17,44 @@ class AnalysisController extends Controller
     {
         $year = $request->input('year', now()->year);
 
-        // Combine bookings and payments by booking_id to correctly align data
         $analysis = Booking::select(
             DB::raw('MONTH(event_date) as month'),
             DB::raw('COUNT(id) as total_bookings'),
-            DB::raw('SUM(guests_count) as total_guests'), // ✅ NEW
+            DB::raw('SUM(guests_count) as total_guests'),
             DB::raw('SUM(total_amount) as total_sales'),
             DB::raw('SUM(total_amount - remaining_amount) as total_paid'),
             DB::raw('SUM(remaining_amount) as total_pending')
         )
             ->whereYear('event_date', $year)
-            ->where('status', 'Active') // ✅ only active
+            ->where('status', 'Active')
             ->groupBy(DB::raw('MONTH(event_date)'))
             ->orderBy(DB::raw('MONTH(event_date)'))
             ->get()
             ->keyBy('month');
 
-
-
-        // Prepare chart data
         $chartMonths = [];
         $monthlySales = [];
         $monthlyBookings = [];
         $monthlyPaid = [];
         $monthlyPending = [];
-
         $monthlyGuests = [];
 
         foreach (range(1, 12) as $m) {
             $chartMonths[] = Carbon::create()->month($m)->format('M');
             $monthlySales[] = $analysis[$m]->total_sales ?? 0;
             $monthlyBookings[] = $analysis[$m]->total_bookings ?? 0;
-            $monthlyGuests[] = $analysis[$m]->total_guests ?? 0; // ✅ NEW
+            $monthlyGuests[] = $analysis[$m]->total_guests ?? 0;
             $monthlyPaid[] = $analysis[$m]->total_paid ?? 0;
             $monthlyPending[] = $analysis[$m]->total_pending ?? 0;
         }
 
-        // Totals for donut chart (ensures consistency)
         $totalPaid = array_sum($monthlyPaid);
         $totalPending = array_sum($monthlyPending);
 
-        // Ensure pending recalculated correctly if rounding or missing payments exist
         if (($totalPaid + $totalPending) != array_sum($monthlySales)) {
             $totalPending = array_sum($monthlySales) - $totalPaid;
         }
 
-        // Return data to view
         $data = [
             'monthlyGuests' => $monthlyGuests,
             'totalGuests' => array_sum($monthlyGuests),
@@ -97,7 +89,7 @@ class AnalysisController extends Controller
         $items = Inventory::where('category', $category)->get();
 
         /**
-         * Build per-item stats first, then sort and pick top 10
+         * Build per-item stats (ALL ITEMS)
          * "Most using inventory" = highest total_out (most consumed)
          */
         $rows = [];
@@ -126,49 +118,73 @@ class AnalysisController extends Controller
             ];
         }
 
-        // ✅ Sort by "most used" (total_out) desc, then take top 10
+        // ✅ Sort by "most used" (total_out) desc
         usort($rows, function ($a, $b) {
             return $b['total_out'] <=> $a['total_out'];
         });
 
+        // ✅ TOP 10 ONLY for chart
         $topRows = array_slice($rows, 0, 10);
 
-        // Prepare arrays for chart and summary (ONLY top 10)
-        $labels = [];
-        $perItemPurchase = [];
-        $perItemQtyIn = [];
-        $perItemQtyOut = [];
-        $perItemRemain = [];
+        /**
+         * ✅ TABLE arrays (ALL ITEMS)
+         */
+        $labelsAll = [];
+        $perItemPurchaseAll = [];
+        $perItemQtyInAll = [];
+        $perItemQtyOutAll = [];
+        $perItemRemainAll = [];
 
+        // Totals for category summary (ALL items totals)
         $totalQtyIn = 0;
         $totalQtyOut = 0;
         $totalPurchaseAmt = 0;
 
-        foreach ($topRows as $r) {
-            $labels[] = $r['name'];
-            $perItemQtyIn[] = $r['total_in'];
-            $perItemQtyOut[] = $r['total_out'];
-            $perItemPurchase[] = $r['total_price'];
-            $perItemRemain[] = $r['current_qty'];
+        foreach ($rows as $r) {
+            $labelsAll[] = $r['name'];
+            $perItemQtyInAll[] = $r['total_in'];
+            $perItemQtyOutAll[] = $r['total_out'];
+            $perItemPurchaseAll[] = $r['total_price'];
+            $perItemRemainAll[] = $r['current_qty'];
 
             $totalQtyIn += $r['total_in'];
             $totalQtyOut += $r['total_out'];
             $totalPurchaseAmt += $r['total_price'];
         }
 
+        /**
+         * ✅ CHART arrays (TOP 10)
+         */
+        $labelsTop10 = [];
+        $perItemQtyInTop10 = [];
+        $perItemQtyOutTop10 = [];
+
+        foreach ($topRows as $r) {
+            $labelsTop10[] = $r['name'];
+            $perItemQtyInTop10[] = $r['total_in'];
+            $perItemQtyOutTop10[] = $r['total_out'];
+        }
+
         $data = [
             'year' => now()->year,
-            'chartMonths' => $labels,          // item names (top 10)
-            'monthlySales' => $perItemPurchase, // total purchase per item (top 10)
-            'monthlyBookings' => $perItemQtyIn, // total quantity in (top 10)
-            'monthlyPaid' => $perItemQtyOut,    // total quantity out (top 10)
-            'monthlyPending' => $perItemRemain, // remaining quantity (top 10)
 
-            // Donut / totals (top 10 totals)
-            'totalPaid' => $totalQtyIn,
-            'totalPending' => $totalQtyOut,
+            // ✅ TABLE (ALL)
+            'chartMonths' => $labelsAll,
+            'monthlySales' => $perItemPurchaseAll,
+            'monthlyBookings' => $perItemQtyInAll,
+            'monthlyPaid' => $perItemQtyOutAll,
+            'monthlyPending' => $perItemRemainAll,
 
+            // ✅ CHART (TOP 10)
+            'chartMonthsTop10' => $labelsTop10,
+            'monthlyBookingsTop10' => $perItemQtyInTop10,
+            'monthlyPaidTop10' => $perItemQtyOutTop10,
+
+            // ✅ Summary totals (ALL)
+            'totalPaid' => $totalQtyIn,       // Total Quantity In (all items)
+            'totalPending' => $totalQtyOut,   // Total Quantity Out (all items)
             'totalPurchaseAmt' => $totalPurchaseAmt,
+
             'category' => $category,
             'categories' => $categories,
             'startDate' => $startDate->toDateString(),
