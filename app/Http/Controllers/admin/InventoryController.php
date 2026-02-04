@@ -134,7 +134,9 @@ class InventoryController extends Controller
         }
         $inventory->save();
 
-        return redirect()->back()->with('success', 'Stock updated successfully.');
+        return redirect()
+            ->route('inventory.index')
+            ->with('success', 'Stock updated successfully.');
     }
 
     /**
@@ -207,7 +209,9 @@ class InventoryController extends Controller
             'quantity' => $request->quantity ?? 0,
         ]);
 
-        return redirect()->back()->with('success', 'Inventory item added successfully.');
+        return redirect()
+            ->route('inventory.index')
+            ->with('success', 'Inventory item added successfully.');
     }
 
     /**
@@ -268,7 +272,7 @@ class InventoryController extends Controller
         ]);
 
         return redirect()
-            ->back()
+            ->route('inventory.index')
             ->with('success', 'Inventory item updated successfully.');
     }
 
@@ -280,7 +284,7 @@ class InventoryController extends Controller
         $inventory->delete();
 
         return redirect()
-            ->back()
+            ->route('inventory.index')
             ->with('success', 'Inventory item deleted successfully.');
     }
 }

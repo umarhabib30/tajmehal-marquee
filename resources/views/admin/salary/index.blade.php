@@ -1,23 +1,127 @@
 @extends('layouts.admin')
+
+@section('style')
+<style>
+@media print {
+
+    /* Reset default spacing */
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background: #fff !important;
+    }
+
+    /* Hide everything except printArea */
+    body * { visibility: hidden !important; }
+    #printArea, #printArea * { visibility: visible !important; }
+
+    /* ✅ IMPORTANT: remove sidebar/content left offset */
+    .wrapper,
+    .content-wrapper,
+    .main-content,
+    .page-wrapper,
+    .app-content,
+    .app-wrapper,
+    .container,
+    .container-fluid,
+    .row,
+    [class*="col-"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* ✅ FIX: stick printArea to the actual page (not inside shifted wrapper) */
+    #printArea{
+        position: fixed !important;   /* <-- this is the main fix */
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Hide unwanted elements */
+    .no-print,
+    .dataTables_filter,
+    .dataTables_length,
+    .dataTables_info,
+    .dataTables_paginate,
+    .btn,
+    .card-header {
+        display: none !important;
+    }
+
+    /* Table full width */
+    .table-responsive { overflow: visible !important; }
+    #salaryTable { width: 100% !important; }
+
+    .print-table th,
+    .print-table td {
+        padding: 8px 10px !important;
+        font-size: 15px !important;
+    }
+
+    @page {
+        size: A4;
+        margin: 8mm !important;
+    }
+}
+
+
+</style>
+@endsection
+
 @section('content')
 
 <div class="row">
     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
         <div class="card">
 
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                 <h4 class="mb-3">{{ $heading }}</h4>
 
-                <div>
-                    <a href="{{ route('admin.salary.create') }}" class="btn btn-primary mb-3">+ Generate New Salary</a>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ route('admin.salary.create') }}" class="btn btn-primary mb-3 no-print">
+                        + Generate New Salary
+                    </a>
 
-                    <a href="javascript:void(0)" onclick="printSalaryOnly()" class="btn btn-secondary mb-3">
+                    <a href="javascript:void(0)" onclick="printSalaryOnly()" class="btn btn-secondary mb-3 no-print">
                         🖨 Print Salary Table
                     </a>
                 </div>
             </div>
 
             <div class="card-body">
+
+                {{-- ✅ Month / Year Filter Controls --}}
+                <div class="mb-3 d-flex justify-content-between flex-wrap bg-white p-2 shadow-sm rounded no-print">
+                    <div>
+                        <label>Select Month:</label>
+                        <select id="selectMonth" class="form-control d-inline-block w-auto">
+                            @for ($m = 1; $m <= 12; $m++)
+                                <option value="{{ $m }}" {{ (int)$m == (int)$month ? 'selected' : '' }}>
+                                    {{ \Carbon\Carbon::create()->month($m)->format('F') }}
+                                </option>
+                            @endfor
+                        </select>
+
+                        <label>Select Year:</label>
+                        <select id="selectYear" class="form-control d-inline-block w-auto">
+                            @for ($y = date('Y') - 5; $y <= date('Y'); $y++)
+                                <option value="{{ $y }}" {{ (int)$y == (int)$year ? 'selected' : '' }}>
+                                    {{ $y }}
+                                </option>
+                            @endfor
+                        </select>
+
+                        <button id="changeSalaryMonth" class="btn btn-primary btn-sm">Go</button>
+                        <button id="salaryThisMonth" class="btn btn-secondary btn-sm">This Month</button>
+                    </div>
+                </div>
 
                 <!-- ====================== PRINT AREA ============================== -->
                 <div id="printArea">
@@ -34,15 +138,15 @@
                             <h2 class="mb-0 text-primary fw-bold">The Taj Mahal Marquee</h2>
                             <div class="small text-secondary">Link Road Aqil Shah, Shahpur</div>
                             <div class="small">Contact: 0300-8700443 | 0324-1111963</div>
-                            <h6 class="fw-semibold mt-1 text-dark">Salary Report</h6>
+                            <h6 class="fw-semibold mt-1 text-dark">
+                                Salary Report - {{ \Carbon\Carbon::createFromDate($year, $month, 1)->format('F Y') }}
+                            </h6>
                         </div>
                     </header>
 
                     <!-- SALARY TABLE -->
                     <div class="table-responsive">
-                        <table id="salaryTable"
-                               class="table table-bordered print-table"
-                               style="width: 100% !important;">
+                        <table id="salaryTable" class="table table-bordered print-table" style="width: 100% !important;">
                             <thead class="thead-light">
                                 <tr>
                                     <th>Staff</th>
@@ -63,17 +167,23 @@
                                         <td>{{ $s->staff->name }}</td>
                                         <td>{{ $s->staff->role }}</td>
                                         <td>{{ \Carbon\Carbon::createFromDate($s->year, $s->month, 1)->format('F Y') }}</td>
-                                        <td>{{ number_format($s->basic,2) }}</td>
+                                        <td>{{ number_format($s->basic, 2) }}</td>
                                         <td>{{ $s->absent_days }}</td>
-                                        <td>{{ number_format($s->deduction_per_absent * $s->absent_days,2) }}</td>
-                                        <td><strong>{{ number_format($s->net_salary,2) }}</strong></td>
+
+                                        {{-- ✅ Deduction is already TOTAL in DB --}}
+                                        <td>{{ number_format($s->deduction_per_absent, 2) }}</td>
+
+                                        <td><strong>{{ number_format($s->net_salary, 2) }}</strong></td>
 
                                         <td class="no-print">
-                                            <a href="{{ route('admin.salary.show', $s->id) }}" class="btn btn-info btn-sm">Show</a>
+                                            <a href="{{ route('admin.salary.show', $s->id) }}" class="btn btn-info btn-sm">
+                                                Show
+                                            </a>
                                         </td>
 
                                         <td class="no-print">
-                                            <form action="{{ route('admin.salary.delete', $s->id) }}" method="POST" class="d-inline delete-salary-form">
+                                            <form action="{{ route('admin.salary.delete', $s->id) }}" method="POST"
+                                                  class="d-inline delete-salary-form">
                                                 @csrf
                                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                             </form>
@@ -82,7 +192,9 @@
 
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="text-center text-muted">No salary records found.</td>
+                                        <td colspan="9" class="text-center text-muted">
+                                            No salary records found for this month.
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -99,25 +211,18 @@
     </div>
 </div>
 
-
-
-
 <!-- ====================== SCRIPTS ============================== -->
-
-<link rel="stylesheet"
-      href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css">
-
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 $(document).ready(function() {
 
     // DataTable init
-    $('#salaryTable').DataTable({
+    const table = $('#salaryTable').DataTable({
         responsive: true,
         paging: true,
         ordering: true,
@@ -143,86 +248,35 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Month/year filter buttons
+    $('#changeSalaryMonth').on('click', function() {
+        const month = $('#selectMonth').val();
+        const year  = $('#selectYear').val();
+        window.location.href = `?month=${month}&year=${year}`;
+    });
+
+    $('#salaryThisMonth').on('click', function() {
+        const now = new Date();
+        window.location.href = `?month=${now.getMonth()+1}&year=${now.getFullYear()}`;
+    });
+
 });
 
-
-// ==================== NEW PRINT FUNCTION ====================
+// ✅ PRINT FIXED FUNCTION (NO body replace, CSS will work)
 function printSalaryOnly() {
-
-    // Show ALL rows temporarily (DataTable API)
     let table = $('#salaryTable').DataTable();
+
+    // show all rows before print
     table.page.len(-1).draw();
 
     setTimeout(() => {
-
-        let printContents = document.getElementById("printArea").innerHTML;
-        let originalContents = document.body.innerHTML;
-
-        document.body.innerHTML = printContents;
-
         window.print();
 
-        document.body.innerHTML = originalContents;
-
-        location.reload();
-
-    }, 500);
+        // restore page size
+        table.page.len(10).draw();
+    }, 300);
 }
-
 </script>
-
-
-
-<!-- ====================== PRINT CSS ============================== -->
-<style>
-@media print {
-
-    /* Hide everything except printArea */
-    body * {
-        visibility: hidden !important;
-    }
-
-    #printArea, #printArea * {
-        visibility: visible !important;
-    }
-
-    /* Expand print area full width */
-    #printArea {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100% !important;
-        padding: 0 20px !important;
-    }
-
-    /* HIDE unwanted elements */
-    .no-print,
-    .dataTables_filter,
-    .dataTables_length,
-    .dataTables_info,
-    .dataTables_paginate,
-    .btn,
-    .card-header {
-        display: none !important;
-    }
-
-    /* INCREASE FONT SIZE */
-    .print-table {
-        font-size: 17px !important;
-    }
-
-    .print-table th,
-    .print-table td {
-        padding: 10px !important;
-        font-size: 17px !important;
-    }
-
-    @page {
-        size: A4;
-        margin: 10mm !important;
-    }
-}
-
-</style>
 
 @endsection
