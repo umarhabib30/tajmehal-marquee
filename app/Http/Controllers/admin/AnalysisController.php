@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Inventory;
 use App\Models\InventoryStock;
-use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -77,84 +76,98 @@ class AnalysisController extends Controller
 
     public function inventory(Request $request)
     {
-        // Default category = Food
         $category = $request->get('category', 'Food');
         $categories = ['Food', 'Electronics', 'Furniture', 'Decoration', 'Crockery'];
 
-        // Date range: from 1st of last month to today
         $startDate = Carbon::now()->subMonth()->startOfMonth();
         $endDate = Carbon::now();
 
-        // Get inventory items filtered by category
         $items = Inventory::where('category', $category)->get();
 
-        /**
-         * Build per-item stats (ALL ITEMS)
-         * "Most using inventory" = highest total_out (most consumed)
-         */
         $rows = [];
 
         foreach ($items as $item) {
+            // ✅ Separate IN and OUT totals using CASE, so we can calculate avg cost from IN
             $stocks = InventoryStock::where('inventory_id', $item->id)
                 ->whereBetween('date', [$startDate, $endDate])
                 ->select(
                     DB::raw('COALESCE(SUM(quantity_in),0) as total_in'),
                     DB::raw('COALESCE(SUM(quantity_out),0) as total_out'),
-                    DB::raw('COALESCE(SUM(quantity_in * price_per_unit),0) as total_price')
+
+                    DB::raw('COALESCE(SUM(quantity_in * price_per_unit),0) as total_price_in'),
+
+                    // This will be 0 if price_per_unit is not stored on OUT rows
+                    DB::raw('COALESCE(SUM(quantity_out * price_per_unit),0) as total_price_out_raw')
                 )
                 ->first();
 
             $totalIn = (float) ($stocks->total_in ?? 0);
             $totalOut = (float) ($stocks->total_out ?? 0);
-            $totalPrice = (float) ($stocks->total_price ?? 0);
+
+            $totalPriceIn = (float) ($stocks->total_price_in ?? 0);
+            $totalPriceOutRaw = (float) ($stocks->total_price_out_raw ?? 0);
+
+            // ✅ If OUT price is missing in DB, estimate OUT using avg unit cost from IN
+            $avgUnitCost = 0;
+            if ($totalIn > 0) {
+                $avgUnitCost = $totalPriceIn / $totalIn;
+            }
+
+            $totalPriceOut = $totalPriceOutRaw;
+            if ($totalPriceOut <= 0 && $totalOut > 0) {
+                $totalPriceOut = $totalOut * $avgUnitCost;
+            }
+
             $currentQty = (float) ($item->quantity ?? 0);
 
             $rows[] = [
                 'name' => $item->name,
                 'total_in' => $totalIn,
                 'total_out' => $totalOut,
-                'total_price' => $totalPrice,
+                'total_price_in' => $totalPriceIn,
+                'total_price_out' => $totalPriceOut,
                 'current_qty' => $currentQty,
             ];
         }
 
-        // ✅ Sort by "most used" (total_out) desc
         usort($rows, function ($a, $b) {
             return $b['total_out'] <=> $a['total_out'];
         });
 
-        // ✅ TOP 10 ONLY for chart
         $topRows = array_slice($rows, 0, 10);
 
-        /**
-         * ✅ TABLE arrays (ALL ITEMS)
-         */
+        // ✅ TABLE arrays (ALL ITEMS)
         $labelsAll = [];
-        $perItemPurchaseAll = [];
+        $perItemPriceInAll = [];
         $perItemQtyInAll = [];
         $perItemQtyOutAll = [];
         $perItemRemainAll = [];
 
-        // Totals for category summary (ALL items totals)
+        // ✅ Summary totals
         $totalQtyIn = 0;
         $totalQtyOut = 0;
-        $totalPurchaseAmt = 0;
+        $totalPriceIn = 0;
+        $totalPriceOut = 0;
 
         foreach ($rows as $r) {
             $labelsAll[] = $r['name'];
             $perItemQtyInAll[] = $r['total_in'];
             $perItemQtyOutAll[] = $r['total_out'];
-            $perItemPurchaseAll[] = $r['total_price'];
+
+            // Table "Total Price" keeps Price In (as you had before)
+            $perItemPriceInAll[] = $r['total_price_in'];
+
             $perItemRemainAll[] = $r['current_qty'];
 
             $totalQtyIn += $r['total_in'];
             $totalQtyOut += $r['total_out'];
-            $totalPurchaseAmt += $r['total_price'];
+            $totalPriceIn += $r['total_price_in'];
+            $totalPriceOut += $r['total_price_out'];
         }
 
-        /**
-         * ✅ CHART arrays (TOP 10)
-         */
+        $moneyDifference = $totalPriceIn - $totalPriceOut;
+
+        // ✅ CHART arrays (TOP 10)
         $labelsTop10 = [];
         $perItemQtyInTop10 = [];
         $perItemQtyOutTop10 = [];
@@ -170,7 +183,7 @@ class AnalysisController extends Controller
 
             // ✅ TABLE (ALL)
             'chartMonths' => $labelsAll,
-            'monthlySales' => $perItemPurchaseAll,
+            'monthlySales' => $perItemPriceInAll,
             'monthlyBookings' => $perItemQtyInAll,
             'monthlyPaid' => $perItemQtyOutAll,
             'monthlyPending' => $perItemRemainAll,
@@ -180,10 +193,12 @@ class AnalysisController extends Controller
             'monthlyBookingsTop10' => $perItemQtyInTop10,
             'monthlyPaidTop10' => $perItemQtyOutTop10,
 
-            // ✅ Summary totals (ALL)
-            'totalPaid' => $totalQtyIn,       // Total Quantity In (all items)
-            'totalPending' => $totalQtyOut,   // Total Quantity Out (all items)
-            'totalPurchaseAmt' => $totalPurchaseAmt,
+            // ✅ Summary totals for Blade
+            'totalQtyIn' => $totalQtyIn,
+            'totalQtyOut' => $totalQtyOut,
+            'totalPriceIn' => $totalPriceIn,
+            'totalPriceOut' => $totalPriceOut,
+            'moneyDifference' => $moneyDifference,
 
             'category' => $category,
             'categories' => $categories,

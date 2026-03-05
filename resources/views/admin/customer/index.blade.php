@@ -20,6 +20,7 @@
                                 <th>Phone2</th>
                                 <th>ID Card</th>
                                 <th>Address</th>
+                                <th>second name(op)</th>
                                 <th>Edit</th>
                                 <th>Delete</th>
                             </tr>
@@ -32,6 +33,7 @@
                                     <td>{{ $value->phone2 ?? 'N/A' }}</td>
                                     <td>{{ $value->idcardnumber }}</td>
                                     <td>{{ $value->address }}</td>
+                                    <td>{{$value->name2}}</td>
                                     <td>
                                         <a href="{{ route('customer.edit', $value->id) }}"
                                            class="btn btn-primary btn-sm">Edit</a>

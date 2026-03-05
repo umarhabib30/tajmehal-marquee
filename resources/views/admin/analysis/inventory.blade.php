@@ -69,9 +69,16 @@
                     <h4 class="fw-bold" style="color: var(--main-color)">
                         {{ strtoupper($category) }}
                     </h4>
-                    <p class="text-muted mb-2">Total Quantity In: <b>{{ $totalPaid }}</b></p>
-                    <p class="text-muted mb-2">Total Quantity Out: <b>{{ $totalPending }}</b></p>
-                    <p class="text-muted">Total Purchase: <b>₨{{ number_format($totalPurchaseAmt) }}</b></p>
+
+                    <p class="text-muted mb-2">Total Quantity In: <b>{{ $totalQtyIn }}</b></p>
+                    <p class="text-muted mb-2">Total Price In: <b>Rs{{ number_format($totalPriceIn) }}</b></p>
+
+                    <p class="text-muted mb-2">Total Quantity Out: <b>{{ $totalQtyOut }}</b></p>
+                    <p class="text-muted mb-2">Total Price Out: <b>Rs{{ number_format($totalPriceOut) }}</b></p>
+
+                    <hr>
+
+                    <p class="text-muted mb-0">Difference: <b>Rs{{ number_format($moneyDifference) }}</b></p>
                 </div>
             </div>
         </div>
