@@ -45,30 +45,101 @@
         /* =========================
    GLOBAL NAVBAR STYLE
 ========================== */
+        .dashboard-header {
+            z-index: 1030;
+        }
+
         .dashboard-header nav.navbar {
-            padding-top: 6px;
-            padding-bottom: 6px;
+            padding: 6px 16px;
             background-color: #29166f !important;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            flex-wrap: wrap;
-            /* allow wrapping on small screens */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: 64px;
         }
 
         .dashboard-header .navbar-brand {
-            font-size: 1.15rem;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            margin-right: 0;
+            padding: 0;
             color: #fff !important;
-            white-space: nowrap;
-            letter-spacing: 0.4px;
-            text-transform: capitalize;
         }
 
-        .dashboard-header .nav-link {
+        .dashboard-header .brand-logo {
+            display: block;
+            height: 40px;
+            width: auto;
+            max-width: min(180px, 42vw);
+            border-radius: 5px;
+        }
+
+        .dashboard-header .header-menu-toggle {
+            display: none;
+        }
+
+        .dashboard-header .navbar-toggler {
+            margin-left: auto;
+            padding: 0.35rem 0.55rem;
+            border-color: rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .dashboard-header .navbar-toggler-icon {
+            width: 1.35rem;
+            height: 1.35rem;
+            display: block;
+            background-image: none;
+            position: relative;
+        }
+
+        .dashboard-header .navbar-toggler-icon::before {
+            content: "\f0c9";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: #fff;
+            font-size: 1.05rem;
+            line-height: 1.35rem;
+            display: block;
+            text-align: center;
+        }
+
+        .dashboard-header .nav-link,
+        .dashboard-header .nav-user-img {
             color: #fff !important;
         }
 
         .dashboard-header .nav-link:hover {
             color: #f5c542 !important;
+        }
+
+        .dashboard-header .navbar-collapse {
+            flex-grow: 0;
+        }
+
+        .dashboard-header .navbar-right-top {
+            align-items: center;
+            margin-top: 0;
+            gap: 0;
+            margin-left: auto;
+        }
+
+        .dashboard-header .navbar-right-top .nav-item {
+            border-right: 0;
+        }
+
+        .dashboard-header .navbar-right-top .nav-link {
+            padding: 0;
+        }
+
+        .dashboard-header .nav-user-img {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
         }
 
         .nav-user-dropdown .nav-user-info {
@@ -80,43 +151,97 @@
             color: #fff;
         }
 
-        .navbar-toggler {
-            border-color: rgba(255, 255, 255, .1);
-        }
-
-        .navbar-toggler-icon {
-            filter: invert(1);
-        }
-
-        /* Make nav-items stack on smaller screens */
         @media (max-width: 992px) {
             .dashboard-header nav.navbar {
-                padding-top: 4px;
-                padding-bottom: 4px;
+                padding: 10px 12px;
+                gap: 10px;
             }
 
-            .dashboard-header .navbar-brand {
-                font-size: 1rem;
+            .dashboard-header .brand-logo {
+                height: 34px;
+                max-width: 140px;
             }
 
-            .navbar-collapse {
-                text-align: center;
+            .dashboard-header .header-menu-toggle {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
             }
 
-            .navbar-nav {
-                margin-top: 10px;
+            .dashboard-header .navbar-right-top {
+                display: none;
+            }
+
+            .nav-left-sidebar {
+                position: fixed;
+                top: 56px;
+                left: 0;
+                width: 100%;
+                height: auto;
+                max-height: calc(100vh - 56px);
+                overflow-y: auto;
+                background: transparent;
+                box-shadow: none;
+                z-index: 1025;
+            }
+
+            .nav-left-sidebar .navbar {
+                padding: 0;
+            }
+
+            .nav-left-sidebar .navbar-collapse {
+                background: #0f1738;
+                box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+            }
+
+            .nav-left-sidebar .nav-divider {
+                display: none;
+            }
+
+            .nav-left-sidebar .navbar-nav .nav-link {
+                color: #c7d0ff;
+            }
+
+            .nav-left-sidebar .navbar-nav .nav-link:hover,
+            .nav-left-sidebar .navbar-nav .nav-link:focus,
+            .nav-left-sidebar .navbar-nav .nav-link.active {
+                color: #fff;
+                background-color: #242849;
+            }
+
+            .nav-left-sidebar .submenu {
+                background: #161f47;
             }
         }
 
         @media (max-width: 768px) {
-            .dashboard-header .navbar-brand {
-                font-size: 0.95rem;
+            .dashboard-header nav.navbar {
+                min-height: 56px;
+            }
+
+            .nav-left-sidebar {
+                top: 56px;
+                max-height: calc(100vh - 56px);
+            }
+
+            .nav-left-sidebar .submenu {
+                padding-left: 8px;
+                padding-right: 8px;
             }
         }
 
         @media (max-width: 480px) {
-            .dashboard-header .navbar-brand {
-                font-size: 0.9rem;
+            .dashboard-header nav.navbar {
+                padding: 10px;
+            }
+
+            .dashboard-header .brand-logo {
+                height: 30px;
+                max-width: 120px;
+            }
+
+            .dashboard-header .navbar-toggler {
+                padding: 0.3rem 0.45rem;
             }
 
             .nav-user-dropdown .nav-user-info {
@@ -139,42 +264,39 @@
         <div class="dashboard-header">
             <nav class="navbar navbar-expand-lg fixed-top">
                 <a class="navbar-brand d-flex align-items-center" href="#">
-                    <img src="{{ asset('assets/images/logo1.png') }}" alt="Logo"
-                        style="height: 40px; width: auto; margin-right: 50px; border-radius: 5px;">
+                    <img src="{{ asset('assets/images/logo1.png') }}" alt="Logo" class="brand-logo">
                 </a>
 
-                <button class="navbar-toggler" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                <button class="navbar-toggler header-menu-toggle" type="button" data-toggle="collapse"
+                    data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
                     aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ml-auto navbar-right-top">
-                        <li class="nav-item dropdown nav-user">
-                            <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <img src="{{ asset('assets/images/avatar-1.jpg') }}" alt=""
-                                    class="user-avatar-md rounded-circle border border-white">
-                            </a>
+                <ul class="navbar-nav navbar-right-top d-none d-lg-flex">
+                    <li class="nav-item dropdown nav-user">
+                        <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img src="{{ asset('assets/images/avatar-1.jpg') }}" alt=""
+                                class="user-avatar-md rounded-circle border border-white">
+                        </a>
 
-                            <div class="dropdown-menu dropdown-menu-right nav-user-dropdown"
-                                aria-labelledby="navbarDropdownMenuLink2">
-                                <div class="nav-user-info">
-                                    <h5 class="mb-0 nav-user-name">{{ auth()->user()->name ?? 'User' }}</h5>
-                                </div>
-                                <a href="{{ route('logout') }}"
-                                    onclick="event.preventDefault();document.getElementById('logout-form').submit();"
-                                    class="dropdown-item text-dark">
-                                    <i class="fa fa-sign-out-alt mr-2 text-dark"></i> Logout
-                                </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                    @csrf
-                                </form>
+                        <div class="dropdown-menu dropdown-menu-right nav-user-dropdown"
+                            aria-labelledby="navbarDropdownMenuLink2">
+                            <div class="nav-user-info">
+                                <h5 class="mb-0 nav-user-name">{{ auth()->user()->name ?? 'User' }}</h5>
                             </div>
-                        </li>
-                    </ul>
-                </div>
+                            <a href="{{ route('logout') }}"
+                                onclick="event.preventDefault();document.getElementById('logout-form').submit();"
+                                class="dropdown-item text-dark">
+                                <i class="fa fa-sign-out-alt mr-2 text-dark"></i> Logout
+                            </a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                @csrf
+                            </form>
+                        </div>
+                    </li>
+                </ul>
             </nav>
         </div>
 
@@ -184,11 +306,6 @@
         <div class="nav-left-sidebar sidebar-dark">
             <div class="menu-list">
                 <nav class="navbar navbar-expand-lg navbar-light">
-                    <a class="d-xl-none d-lg-none" href="#">Dashboard</a>
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav flex-column">
                             <li class="nav-divider">Menu</li>
@@ -403,6 +520,14 @@
                                     </div>
                                 </li>
                             @endmoduleNav
+
+                            <li class="nav-item d-lg-none">
+                                <a href="{{ route('logout') }}"
+                                    onclick="event.preventDefault();document.getElementById('logout-form').submit();"
+                                    class="nav-link">
+                                    <i class="fa fa-fw fa-sign-out-alt"></i> Logout
+                                </a>
+                            </li>
 
                         </ul>
                     </div>
