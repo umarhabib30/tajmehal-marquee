@@ -16,11 +16,17 @@ class AdminRoleMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->role == 1) {
-            return $next($request); // agar admin hai to allow
+        if (! Auth::check()) {
+            return redirect('/login');
         }
 
-        return redirect('/login'); 
+        $role = (int) Auth::user()->role;
+
+        if ($role === \App\Models\User::ROLE_SUPER_ADMIN || $role === \App\Models\User::ROLE_STAFF) {
+            return $next($request);
+        }
+
+        return redirect('/login');
         
     }
 }

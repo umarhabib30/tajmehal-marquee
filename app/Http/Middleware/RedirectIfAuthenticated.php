@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +21,15 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+                $user = Auth::guard($guard)->user();
+                if ($user instanceof User) {
+                    $path = $user->defaultPostLoginPath();
+                    if ($path) {
+                        return redirect($path);
+                    }
+                }
+
+                return redirect('/login');
             }
         }
 

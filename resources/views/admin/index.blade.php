@@ -33,6 +33,33 @@
 
         .fc-event {
             font-size: 0.85rem;
+            border: none;
+        }
+
+        /* Booking status legend (dashboard calendar) */
+        .booking-status-legend {
+            font-size: 0.875rem;
+        }
+
+        .booking-status-legend .legend-swatch {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+
+        .legend-active {
+            background: #6c757d;
+        }
+
+        .legend-done {
+            background: #28a745;
+        }
+
+        .legend-cancelled {
+            background: #dc3545;
         }
 
         .modal-content {
@@ -70,6 +97,11 @@
                     <i class="fa fa-undo"></i> Today
                 </button>
             </div>
+            <div class="booking-status-legend mt-2 mt-md-0 text-muted px-3">
+                <span class="me-3"><span class="legend-swatch legend-active"></span>Active</span>
+                <span class="me-3"><span class="legend-swatch legend-done"></span>Done</span>
+                <span><span class="legend-swatch legend-cancelled"></span>Cancelled</span>
+            </div>
         </div>
 
         <!-- Calendar Card -->
@@ -84,9 +116,16 @@
     <div class="modal fade" id="bookingModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content shadow-lg">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="bookingModalTitle" style="color: white !important;"></h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                <div class="modal-header bg-primary text-white d-flex flex-nowrap align-items-center">
+                    <div class="flex-grow-1 me-2" style="min-width: 0;">
+                        <h5 class="modal-title mb-0 text-truncate" style="color: white !important;">
+                            <span id="bookingModalTitle"></span>
+                        </h5>
+                    </div>
+                    <span id="bookingModalStatusBadge"
+                        class="badge rounded-pill px-3 py-2 border border-white flex-shrink-0 me-2 d-none"
+                        style="font-size: 0.8rem;"></span>
+                    <button type="button" class="btn-close btn-close-white flex-shrink-0" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -102,7 +141,7 @@
                             <p><strong>Type:</strong> <span id="bookingType"></span></p>
                             <p><strong>Date:</strong> <span id="bookingDate"></span></p>
                             <p><strong>Time:</strong> <span id="bookingTime"></span></p>
-                            <p><strong>Hall:</strong> <span id="bookingHall"></span></p>
+                            <p class="mb-0"><strong>Hall:</strong> <span id="bookingHall"></span></p>
                         </div>
                     </div>
 
@@ -133,8 +172,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
-            const colors = ['#007bff', '#28a745', '#ffc107', '#17a2b8', '#fd7e14', '#6f42c1', '#e83e8c'];
-            let colorIndex = 0;
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -166,8 +203,6 @@
                     info.el.style.borderRadius = '8px';
                     info.el.style.padding = '2px 4px';
                     info.el.style.cursor = 'pointer';
-                    info.el.style.backgroundColor = colors[colorIndex % colors.length];
-                    colorIndex++;
                 },
 
                 eventClick: function(info) {
@@ -183,8 +218,18 @@
                         return `${h}:${minute} ${ampm}`;
                     }
 
+                    const statusLabel = (b.status != null && String(b.status).trim() !== '')
+                        ? String(b.status).trim()
+                        : 'Active';
+                    const statusBg = info.event.backgroundColor || info.event.borderColor ||
+                        b.status_color || '#6c757d';
+
                     // Customer Info
                     $('#bookingModalTitle').text(`${b.event_type || 'Event'} - ${b.time_slot || ''}`);
+                    $('#bookingModalStatusBadge').removeClass('d-none').text(statusLabel).css({
+                        backgroundColor: statusBg,
+                        color: '#ffffff'
+                    });
                     $('#bookingCustomer').text(b.customer_name || 'N/A');
                     $('#bookingPhone').text(b.customer_phone || 'N/A');
                     $('#bookingAddress').text(b.customer_address || 'N/A');

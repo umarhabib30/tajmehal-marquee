@@ -71,39 +71,43 @@
             <div class="card-body">
                 <h5 class="fw-bold mb-3">Add New Payment</h5>
 
-                <form id="paymentForm" method="POST" action="{{ route('admin.booking.addPayment') }}">
-                    @csrf
-                    <input type="hidden" name="booking_id" value="{{ $booking->id }}">
-                    <input type="hidden" id="remaining_amount" value="{{ $booking->remaining_amount }}">
+                @modulePerm('booking', 'edit')
+                    <form id="paymentForm" method="POST" action="{{ route('admin.booking.addPayment') }}">
+                        @csrf
+                        <input type="hidden" name="booking_id" value="{{ $booking->id }}">
+                        <input type="hidden" id="remaining_amount" value="{{ $booking->remaining_amount }}">
 
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Payment Amount (₨)</label>
-                            <input type="number" name="amount" id="amount" class="form-control" min="1"
-                                required>
-                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Payment Amount (₨)</label>
+                                <input type="number" name="amount" id="amount" class="form-control" min="1"
+                                    required>
+                            </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Payment Date</label>
-                            <input type="date" name="payment_date" class="form-control"
-                                value="{{ now()->format('Y-m-d') }}" required>
-                        </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Payment Date</label>
+                                <input type="date" name="payment_date" class="form-control"
+                                    value="{{ now()->format('Y-m-d') }}" required>
+                            </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Payment Method</label>
-                            <select name="payment_method" class="form-control">
-                                <option value="Cash">Cash</option>
-                                <option value="Online Payment">Online Payment</option>
-                            </select>
-                        </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Payment Method</label>
+                                <select name="payment_method" class="form-control">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Online Payment">Online Payment</option>
+                                </select>
+                            </div>
 
-                        <div class="col-12 text-end">
-                            <button type="submit" class="btn btn-success mt-3">
-                                <i class="fa fa-plus"></i> Add Payment
-                            </button>
+                            <div class="col-12 text-end">
+                                <button type="submit" class="btn btn-success mt-3">
+                                    <i class="fa fa-plus"></i> Add Payment
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                @else
+                    <div class="alert alert-warning mb-0">You can view payment history, but you do not have permission to add payments.</div>
+                @endmodulePerm
             </div>
         </div>
     </div>
@@ -113,7 +117,9 @@
 @section('script')
     {{-- ✅ JavaScript Validation --}}
     <script>
-        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        const paymentForm = document.getElementById('paymentForm');
+        if (paymentForm) {
+            paymentForm.addEventListener('submit', function(e) {
             const amount = parseFloat(document.getElementById('amount').value);
             const remaining = parseFloat(document.getElementById('remaining_amount').value);
 
@@ -122,6 +128,7 @@
                 toastr.error('Payment amount cannot exceed the remaining balance (₨ ' + remaining.toLocaleString() + ').');
                 return false;
             }
-        });
+            });
+        }
     </script>
 @endsection

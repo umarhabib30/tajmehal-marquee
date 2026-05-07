@@ -10,6 +10,7 @@ use App\Models\DishPackage;
 use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class BookingController extends Controller
 {
@@ -74,7 +75,7 @@ class BookingController extends Controller
             'customer_signature' => 'nullable|string',
             'manager_signature' => 'nullable|string',
             'notes' => 'nullable|string',
-            'status' => 'nullable|in:Active,Cancelled',
+            'status' => ['nullable', Rule::in(Booking::allowedStatuses())],
 
         ]);
 
@@ -85,7 +86,7 @@ class BookingController extends Controller
         $validated['decore_price'] = $request->decore_price ?? 0;
         $validated['tax_amount'] = $request->tax_amount ?? 0;
         $validated['advance_payment'] = $request->advance_payment ?? 0;
-        $validated['status'] = $request->status ?? 'Active';
+        $validated['status'] = $request->status ?? Booking::STATUS_ACTIVE;
 
         // ✅ DUPLICATE CHECK
         $duplicate = Booking::whereDate('event_date', $request->event_date)
@@ -196,7 +197,7 @@ class BookingController extends Controller
             'customer_signature' => 'nullable|string',
             'manager_signature' => 'nullable|string',
             'notes' => 'nullable|string',
-            'status' => 'required|in:Active,Cancelled',
+            'status' => ['required', Rule::in(Booking::allowedStatuses())],
 
         ]);
 

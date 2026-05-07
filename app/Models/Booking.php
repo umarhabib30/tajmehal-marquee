@@ -9,6 +9,56 @@ class Booking extends Model
 {
     use HasFactory;
 
+    public const STATUS_ACTIVE = 'Active';
+
+    public const STATUS_DONE = 'Done';
+
+    public const STATUS_CANCELLED = 'Cancelled';
+
+    /** @return list<string> */
+    public static function allowedStatuses(): array
+    {
+        return [
+            self::STATUS_ACTIVE,
+            self::STATUS_DONE,
+            self::STATUS_CANCELLED,
+        ];
+    }
+
+    public static function calendarColor(?string $status): string
+    {
+        $raw = trim((string) $status);
+
+        return match ($raw) {
+            self::STATUS_ACTIVE => '#6c757d',
+            self::STATUS_DONE => '#28a745',
+            self::STATUS_CANCELLED => '#dc3545',
+            default => match (strtolower($raw)) {
+                'completed' => '#28a745',
+                'cancelled', 'canceled' => '#dc3545',
+                'active' => '#6c757d',
+                default => '#6c757d',
+            },
+        };
+    }
+
+    public function statusBadgeClass(): string
+    {
+        $raw = trim((string) $this->status);
+
+        return match ($raw) {
+            self::STATUS_ACTIVE => 'bg-secondary text-white',
+            self::STATUS_DONE => 'bg-success',
+            self::STATUS_CANCELLED => 'bg-danger',
+            default => match (strtolower($raw)) {
+                'completed' => 'bg-success',
+                'cancelled', 'canceled' => 'bg-danger',
+                'active' => 'bg-secondary text-white',
+                default => 'bg-secondary text-white',
+            },
+        };
+    }
+
     protected $fillable = [
         'customer_id',
         'customer_phone',

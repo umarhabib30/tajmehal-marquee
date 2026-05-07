@@ -293,6 +293,17 @@
                         <textarea name="notes" class="form-control" rows="3" placeholder="Write additional booking details..."></textarea>
                     </div>
 
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Booking status</label>
+                        <select name="status" class="form-control">
+                            <option value="Active" {{ old('status', 'Active') === 'Active' ? 'selected' : '' }}>Active
+                            </option>
+                            <option value="Done" {{ old('status') === 'Done' ? 'selected' : '' }}>Done</option>
+                            <option value="Cancelled" {{ old('status') === 'Cancelled' ? 'selected' : '' }}>Cancelled
+                            </option>
+                        </select>
+                    </div>
+
                     {{-- Submit --}}
                     <div class="col-12 text-end">
                         <button type="submit" class="btn btn-primary mt-3">

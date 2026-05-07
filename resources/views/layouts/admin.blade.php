@@ -161,7 +161,7 @@
                             <div class="dropdown-menu dropdown-menu-right nav-user-dropdown"
                                 aria-labelledby="navbarDropdownMenuLink2">
                                 <div class="nav-user-info">
-                                    <h5 class="mb-0 nav-user-name">Super Admin</h5>
+                                    <h5 class="mb-0 nav-user-name">{{ auth()->user()->name ?? 'User' }}</h5>
                                 </div>
                                 <a href="{{ route('logout') }}"
                                     onclick="event.preventDefault();document.getElementById('logout-form').submit();"
@@ -193,161 +193,216 @@
                         <ul class="navbar-nav flex-column">
                             <li class="nav-divider">Menu</li>
 
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'Dashboard') active @endif"
-                                    href="{{ url('admin/dashboard') }}"><i
-                                        class="fa fa-fw fa-user-circle"></i>Dashboard
-                                    <span class="badge badge-success">6</span></a>
-                            </li>
-                            {{-- for customer --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'customers') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-customers"
-                                    aria-controls="submenu-customers">
-                                    <i class="fa fa-fw fa-users"></i> Customers
-                                </a>
-                                <div id="submenu-customers" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ url('admin/customer/index') }}">View All</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ url('admin/customer/create') }}">Add</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            {{-- for booking --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'booking') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-booking"
-                                    aria-controls="submenu-booking">
-                                    <i class="fa fa-fw fa-calendar-check"></i> Booking
-                                </a>
-                                <div id="submenu-booking" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('admin.booking.index') }}">View All</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('admin.booking.create') }}">Add New</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            {{-- for dishes --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'dishes') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-dishes"
-                                    aria-controls="submenu-dishes">
-                                    <i class="fa fa-fw fa-paint-brush"></i> Dishes
-                                </a>
-                                <div id="submenu-dishes" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ url('admin/dishes/index') }}">View All</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ url('admin/dishes/create') }}">Add</a></li>
-                                    </ul>
-                                </div>
-                            </li>
-                            {{-- for dish packages --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'dish-packages') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-dish-packages"
-                                    aria-controls="submenu-dish-packages">
-                                    <i class="fa fa-fw fa-box"></i> Dish Packages
-                                </a>
-                                <div id="submenu-dish-packages" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="{{ route('admin.dish_package.index') }}">View
-                                                All</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="{{ url('admin/dish_package/create') }}">Add</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
+                            @superAdmin
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'users') active @endif"
+                                        href="{{ route('admin.users.index') }}"><i
+                                            class="fa fa-fw fa-user-shield"></i> Users &amp; permissions</a>
+                                </li>
+                            @endsuperAdmin
 
+                            @moduleNav('dashboard')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'Dashboard') active @endif"
+                                        href="{{ url('admin/dashboard') }}"><i
+                                            class="fa fa-fw fa-user-circle"></i>Dashboard
+                                        <span class="badge badge-success">6</span></a>
+                                </li>
+                            @endmoduleNav
 
-                            {{-- for inventory --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'inventory') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-inventory"
-                                    aria-controls="submenu-inventory">
-                                    <i class="fa fa-fw fa-boxes"></i> Inventory
-                                </a>
-                                <div id="submenu-inventory" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('inventory.create') }}">Add New</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('inventory.index') }}">All Items</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('inventory.food') }}">Food Items</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('inventory.electronics') }}">Electronics Items</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('inventory.furniture') }}">Furniture Items</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('inventory.crockery') }}">Crockery Items</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('inventory.decoration') }}">Decoration Items</a></li>
-                                    </ul>
-                                </div>
-                            </li>
+                            @moduleNav('customers')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'customers') active @endif" href="#"
+                                        data-toggle="collapse" aria-expanded="false" data-target="#submenu-customers"
+                                        aria-controls="submenu-customers">
+                                        <i class="fa fa-fw fa-users"></i> Customers
+                                    </a>
+                                    <div id="submenu-customers" class="collapse submenu">
+                                        <ul class="nav flex-column">
+                                            @modulePerm('customers', 'view')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ url('admin/customer/index') }}">View All</a></li>
+                                            @endmodulePerm
+                                            @modulePerm('customers', 'create')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ url('admin/customer/create') }}">Add</a></li>
+                                            @endmodulePerm
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endmoduleNav
 
-                            {{-- for satff --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'staff') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#submenu-staff"
-                                    aria-controls="submenu-staff">
-                                    <i class="fa fa-fw fa-user-tie"></i> Staff
-                                </a>
-                                <div id="submenu-staff" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ url('admin/staff/index') }}">View All</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ url('admin/staff/create') }}">Add</a></li>
-                                    </ul>
-                                </div>
-                            </li>
+                            @moduleNav('booking')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'booking') active @endif" href="#"
+                                        data-toggle="collapse" aria-expanded="false" data-target="#submenu-booking"
+                                        aria-controls="submenu-booking">
+                                        <i class="fa fa-fw fa-calendar-check"></i> Booking
+                                    </a>
+                                    <div id="submenu-booking" class="collapse submenu">
+                                        <ul class="nav flex-column">
+                                            @modulePerm('booking', 'view')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ route('admin.booking.index') }}">View All</a></li>
+                                            @endmodulePerm
+                                            @modulePerm('booking', 'create')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ route('admin.booking.create') }}">Add New</a></li>
+                                            @endmodulePerm
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endmoduleNav
 
-                            {{-- for attendece --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'attendence') active @endif"
-                                    href="{{ route('attendence.index') }}">
-                                    <i class="fa fa-fw fa-user-check"></i> Attendance
-                                </a>
-                            </li>
-                            {{-- for salaery --}}
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'salary') active @endif"
-                                    href="{{ route('admin.salary.index') }}">
-                                    <i class="fa fa-fw fa-money-bill"></i> Salary
-                                </a>
-                            </li>
+                            @moduleNav('dishes')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'dishes') active @endif" href="#"
+                                        data-toggle="collapse" aria-expanded="false" data-target="#submenu-dishes"
+                                        aria-controls="submenu-dishes">
+                                        <i class="fa fa-fw fa-paint-brush"></i> Dishes
+                                    </a>
+                                    <div id="submenu-dishes" class="collapse submenu">
+                                        <ul class="nav flex-column">
+                                            @modulePerm('dishes', 'view')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ url('admin/dishes/index') }}">View All</a></li>
+                                            @endmodulePerm
+                                            @modulePerm('dishes', 'create')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ url('admin/dishes/create') }}">Add</a></li>
+                                            @endmodulePerm
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endmoduleNav
 
-                            <li class="nav-item">
-                                <a class="nav-link @if ($active == 'analysis') active @endif" href="#"
-                                    data-toggle="collapse" aria-expanded="false" data-target="#analysis-submenu"
-                                    aria-controls="analysis-submenu">
-                                    <i class="fa fa-fw fa-box"></i> Analysis
-                                </a>
-                                <div id="analysis-submenu" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="{{ route('admin.analysis.booking') }}">Booking
-                                                Analysis</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link"
-                                                href="{{ route('admin.analysis.inventory') }}">Inventory Analysis</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
+                            @moduleNav('dish_packages')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'dish-packages') active @endif" href="#"
+                                        data-toggle="collapse" aria-expanded="false"
+                                        data-target="#submenu-dish-packages" aria-controls="submenu-dish-packages">
+                                        <i class="fa fa-fw fa-box"></i> Dish Packages
+                                    </a>
+                                    <div id="submenu-dish-packages" class="collapse submenu">
+                                        <ul class="nav flex-column">
+                                            @modulePerm('dish_packages', 'view')
+                                                <li class="nav-item">
+                                                    <a class="nav-link"
+                                                        href="{{ route('admin.dish_package.index') }}">View All</a>
+                                                </li>
+                                            @endmodulePerm
+                                            @modulePerm('dish_packages', 'create')
+                                                <li class="nav-item">
+                                                    <a class="nav-link"
+                                                        href="{{ url('admin/dish_package/create') }}">Add</a>
+                                                </li>
+                                            @endmodulePerm
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endmoduleNav
 
+                            @moduleNav('inventory')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'inventory') active @endif" href="#"
+                                        data-toggle="collapse" aria-expanded="false" data-target="#submenu-inventory"
+                                        aria-controls="submenu-inventory">
+                                        <i class="fa fa-fw fa-boxes"></i> Inventory
+                                    </a>
+                                    <div id="submenu-inventory" class="collapse submenu">
+                                        <ul class="nav flex-column">
+                                            @modulePerm('inventory', 'create')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ route('inventory.create') }}">Add New</a></li>
+                                            @endmodulePerm
+                                            @modulePerm('inventory', 'view')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ route('inventory.index') }}">All Items</a></li>
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ route('inventory.food') }}">Food Items</a></li>
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ route('inventory.electronics') }}">Electronics
+                                                        Items</a></li>
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ route('inventory.furniture') }}">Furniture Items</a>
+                                                </li>
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ route('inventory.crockery') }}">Crockery Items</a>
+                                                </li>
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ route('inventory.decoration') }}">Decoration
+                                                        Items</a></li>
+                                            @endmodulePerm
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endmoduleNav
 
+                            @moduleNav('staff')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'staff') active @endif" href="#"
+                                        data-toggle="collapse" aria-expanded="false" data-target="#submenu-staff"
+                                        aria-controls="submenu-staff">
+                                        <i class="fa fa-fw fa-user-tie"></i> Staff
+                                    </a>
+                                    <div id="submenu-staff" class="collapse submenu">
+                                        <ul class="nav flex-column">
+                                            @modulePerm('staff', 'view')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ url('admin/staff/index') }}">View All</a></li>
+                                            @endmodulePerm
+                                            @modulePerm('staff', 'create')
+                                                <li class="nav-item"><a class="nav-link"
+                                                        href="{{ url('admin/staff/create') }}">Add</a></li>
+                                            @endmodulePerm
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endmoduleNav
+
+                            @moduleNav('attendance')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'attendence') active @endif"
+                                        href="{{ route('attendence.index') }}">
+                                        <i class="fa fa-fw fa-user-check"></i> Attendance
+                                    </a>
+                                </li>
+                            @endmoduleNav
+
+                            @moduleNav('salary')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'salary') active @endif"
+                                        href="{{ route('admin.salary.index') }}">
+                                        <i class="fa fa-fw fa-money-bill"></i> Salary
+                                    </a>
+                                </li>
+                            @endmoduleNav
+
+                            @moduleNav('analysis')
+                                <li class="nav-item">
+                                    <a class="nav-link @if ($active == 'analysis') active @endif" href="#"
+                                        data-toggle="collapse" aria-expanded="false" data-target="#analysis-submenu"
+                                        aria-controls="analysis-submenu">
+                                        <i class="fa fa-fw fa-chart-bar"></i> Analysis
+                                    </a>
+                                    <div id="analysis-submenu" class="collapse submenu">
+                                        <ul class="nav flex-column">
+                                            @modulePerm('analysis', 'view')
+                                                <li class="nav-item">
+                                                    <a class="nav-link"
+                                                        href="{{ route('admin.analysis.booking') }}">Booking
+                                                        Analysis</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link"
+                                                        href="{{ route('admin.analysis.inventory') }}">Inventory
+                                                        Analysis</a>
+                                                </li>
+                                            @endmodulePerm
+                                        </ul>
+                                    </div>
+                                </li>
+                            @endmoduleNav
 
                         </ul>
                     </div>
@@ -410,6 +465,12 @@
 
 
     @yield('script')
+
+    @if (session('error'))
+        <script>
+            toastr.error(@json(session('error')));
+        </script>
+    @endif
 
 </body>
 

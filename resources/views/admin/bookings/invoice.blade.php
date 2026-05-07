@@ -187,34 +187,37 @@
                     <h4 class="mb-0">Add Extra Guests</h4>
                 </div>
                 <div class="card-body">
+                    @modulePerm('booking', 'edit')
+                        <form action="{{ route('admin.booking.extraGuest') }}" method="POST" id="extraGuestForm">
+                            @csrf
+                            <input type="hidden" name="booking_id" value="{{ $booking->id }}">
+                            <div class="row">
+                                <div class="form-group col-md-3">
+                                    <label for="extra_guests"><strong>Extra Guest Count</strong></label>
+                                    <input type="number" name="extra_guests" id="extra_guest_count" class="form-control"
+                                        min="1" required>
+                                </div>
 
-                    <form action="{{ route('admin.booking.extraGuest') }}" method="POST" id="extraGuestForm">
-                        @csrf
-                        <input type="hidden" name="booking_id" value="{{ $booking->id }}">
-                        <div class="row">
-                            <div class="form-group col-md-3">
-                                <label for="extra_guests"><strong>Extra Guest Count</strong></label>
-                                <input type="number" name="extra_guests" id="extra_guest_count" class="form-control"
-                                    min="1" required>
-                            </div>
+                                <div class="form-group col-md-3">
+                                    <label for="per_head_price"><strong>Price Per Head (₨)</strong></label>
+                                    <input type="number" name="per_head_price" id="extra_price_per_head" class="form-control"
+                                        value="{{ $booking->per_head_price }}" min="0" required readonly>
+                                </div>
 
-                            <div class="form-group col-md-3">
-                                <label for="per_head_price"><strong>Price Per Head (₨)</strong></label>
-                                <input type="number" name="per_head_price" id="extra_price_per_head" class="form-control"
-                                    value="{{ $booking->per_head_price }}" min="0" required readonly>
+                                <div class="form-group col-md-3">
+                                    <label><strong>Extra Guest Total (₨)</strong></label>
+                                    <input type="text" id="extra_total" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-3 mt-3">
+                                    <button type="submit" class="btn btn-primary btn-sm mt-2">
+                                        <i class="fas fa-plus"></i> Add Extra Guests
+                                    </button>
+                                </div>
                             </div>
-
-                            <div class="form-group col-md-3">
-                                <label><strong>Extra Guest Total (₨)</strong></label>
-                                <input type="text" id="extra_total" class="form-control" readonly>
-                            </div>
-                            <div class="col-md-3 mt-3">
-                                <button type="submit" class="btn btn-primary btn-sm mt-2">
-                                    <i class="fas fa-plus"></i> Add Extra Guests
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                        </form>
+                    @else
+                        <div class="alert alert-warning mb-0">You can view this invoice, but you do not have permission to add extra guests.</div>
+                    @endmodulePerm
 
                 </div>
             </div>
@@ -230,6 +233,10 @@
             const guestInput = document.getElementById('extra_guest_count');
             const priceInput = document.getElementById('extra_price_per_head');
             const totalInput = document.getElementById('extra_total');
+
+            if (!guestInput || !priceInput || !totalInput) {
+                return;
+            }
 
             function updateTotal() {
                 const guests = parseInt(guestInput.value) || 0;

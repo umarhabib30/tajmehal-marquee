@@ -245,9 +245,10 @@
                      <div class="col-md-4">
                         <label class="form-label fw-bold">Status</label>
                         <select name="status" class="form-control">
-                            <option value="Active" {{ $booking->status == 'Active' ? 'selected' : '' }}>Active</option>
-                            <option value="Cancelled" {{ $booking->status == 'Cancelled' ? 'selected' : '' }}>Cancelled
-                            </option>
+                            @foreach (\App\Models\Booking::allowedStatuses() as $st)
+                                <option value="{{ $st }}"
+                                    {{ old('status', $booking->status) == $st ? 'selected' : '' }}>{{ $st }}</option>
+                            @endforeach
                         </select>
                     </div>
 

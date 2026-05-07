@@ -23,10 +23,15 @@
                                     <th>Details</th>
                                     <th>Print Details</th>
                                     <th>Invoice</th>
-                                    <th>Edit</th>
-                                    <th>Delete</th>
-
-                                    <th>Add Payments</th>
+                                    @modulePerm('booking', 'edit')
+                                        <th>Edit</th>
+                                    @endmodulePerm
+                                    @modulePerm('booking', 'delete')
+                                        <th>Delete</th>
+                                    @endmodulePerm
+                                    @modulePerm('booking', 'edit')
+                                        <th>Add Payments</th>
+                                    @endmodulePerm
 
 
                                 </tr>
@@ -56,9 +61,8 @@
                                             </small>
                                         </td>
                                         <td>
-                                            <span
-                                                class="badge {{ $booking->status == 'Active' ? 'bg-success' : 'bg-danger' }}">
-                                                {{ $booking->status }}
+                                            <span class="badge {{ $booking->statusBadgeClass() }}">
+                                                {{ $booking->status ?? 'Active' }}
                                             </span>
                                         </td>
 
@@ -80,26 +84,30 @@
                                                 Print Details
                                             </a>
                                         </td>
-                                        <td>
-                                            <a href="{{ route('admin.booking.edit', $booking->id) }}"
-                                                class="btn btn-sm btn-primary text-white">
-                                                Edit
-                                            </a>
-                                        </td>
-                                       
-<td>
-    <button class="btn btn-sm btn-danger delete-btn"
-        data-url="{{ route('admin.booking.delete', $booking->id) }}">
-        <i class="fa fa-trash"></i> Delete
-    </button>
-</td>
-
-                                        <td>
-                                            <a class="btn btn-sm btn-success add-payment-btn"
-                                                href="{{ route('admin.booking.addPaymentPage', $booking->id) }}">
-                                                <i class="fa fa-plus"></i> Add Payment
-                                            </a>
-                                        </td>
+                                        @modulePerm('booking', 'edit')
+                                            <td>
+                                                <a href="{{ route('admin.booking.edit', $booking->id) }}"
+                                                    class="btn btn-sm btn-primary text-white">
+                                                    Edit
+                                                </a>
+                                            </td>
+                                        @endmodulePerm
+                                        @modulePerm('booking', 'delete')
+                                            <td>
+                                                <button class="btn btn-sm btn-danger delete-btn"
+                                                    data-url="{{ route('admin.booking.delete', $booking->id) }}">
+                                                    <i class="fa fa-trash"></i> Delete
+                                                </button>
+                                            </td>
+                                        @endmodulePerm
+                                        @modulePerm('booking', 'edit')
+                                            <td>
+                                                <a class="btn btn-sm btn-success add-payment-btn"
+                                                    href="{{ route('admin.booking.addPaymentPage', $booking->id) }}">
+                                                    <i class="fa fa-plus"></i> Add Payment
+                                                </a>
+                                            </td>
+                                        @endmodulePerm
 
                                     </tr>
                                 @endforeach

@@ -30,12 +30,7 @@ class CalendarController extends Controller
         $bookings = \App\Models\Booking::with(['customer', 'payments'])->get();
 
         $events = $bookings->map(function ($booking) {
-            $color = match (strtolower($booking->status ?? '')) {
-                'completed' => '#28a745',
-                'cancelled' => '#dc3545',
-                'pending' => '#ffc107',
-                default => '#007bff',
-            };
+            $color = Booking::calendarColor($booking->status);
 
             $eventDate = $booking->event_date;
             if (empty($eventDate))
@@ -50,7 +45,9 @@ class CalendarController extends Controller
                 'title' => trim(($booking->event_type ?? 'Event') . ' - ' . ($booking->time_slot ?? 'N/A')),
                 'start' => "{$eventDate}T" . ($booking->start_time ?? '00:00:00'),
                 'end' => "{$eventDate}T" . ($booking->end_time ?? '23:59:59'),
-                'color' => $color,
+                'backgroundColor' => $color,
+                'borderColor' => $color,
+                'textColor' => '#ffffff',
                 'allDay' => false,
                 'extendedProps' => [
                     // Customer Info
@@ -64,7 +61,8 @@ class CalendarController extends Controller
                     'start_time' => $booking->start_time ?? 'N/A',
                     'end_time' => $booking->end_time ?? 'N/A',
                     'hall_name' => $booking->hall_name ?? 'N/A',
-                    'status' => $booking->status ?? 'Active',
+                    'status' => $booking->status ?? Booking::STATUS_ACTIVE,
+                    'status_color' => $color,
                     // Payments
                     'total_amount' => $booking->total_amount ?? 0,
                     'total_paid' => $totalPaid,
