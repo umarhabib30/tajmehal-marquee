@@ -14,7 +14,8 @@ class AnalysisController extends Controller
 {
     public function booking(Request $request)
     {
-        $year = $request->input('year', now()->year);
+        $year = (int) $request->input('year', now()->year);
+        $previousYear = $year - 1;
 
         $analysis = Booking::select(
             DB::raw('MONTH(event_date) as month'),
@@ -25,7 +26,25 @@ class AnalysisController extends Controller
             DB::raw('SUM(remaining_amount) as total_pending')
         )
             ->whereYear('event_date', $year)
-            ->where('status', 'Active')
+            ->where(function ($query) {
+                $query->whereIn('status', [Booking::STATUS_ACTIVE, Booking::STATUS_DONE])
+                    ->orWhereNull('status');
+            })
+            ->groupBy(DB::raw('MONTH(event_date)'))
+            ->orderBy(DB::raw('MONTH(event_date)'))
+            ->get()
+            ->keyBy('month');
+
+        $previousAnalysis = Booking::select(
+            DB::raw('MONTH(event_date) as month'),
+            DB::raw('COUNT(id) as total_bookings'),
+            DB::raw('SUM(total_amount) as total_sales')
+        )
+            ->whereYear('event_date', $previousYear)
+            ->where(function ($query) {
+                $query->whereIn('status', [Booking::STATUS_ACTIVE, Booking::STATUS_DONE])
+                    ->orWhereNull('status');
+            })
             ->groupBy(DB::raw('MONTH(event_date)'))
             ->orderBy(DB::raw('MONTH(event_date)'))
             ->get()
@@ -37,14 +56,26 @@ class AnalysisController extends Controller
         $monthlyPaid = [];
         $monthlyPending = [];
         $monthlyGuests = [];
+        $yearComparisonRows = [];
 
         foreach (range(1, 12) as $m) {
-            $chartMonths[] = Carbon::create()->month($m)->format('M');
+            $monthName = Carbon::create()->month($m)->format('M');
+            $currentBookings = $analysis[$m]->total_bookings ?? 0;
+            $previousBookings = $previousAnalysis[$m]->total_bookings ?? 0;
+
+            $chartMonths[] = $monthName;
             $monthlySales[] = $analysis[$m]->total_sales ?? 0;
-            $monthlyBookings[] = $analysis[$m]->total_bookings ?? 0;
+            $monthlyBookings[] = $currentBookings;
             $monthlyGuests[] = $analysis[$m]->total_guests ?? 0;
             $monthlyPaid[] = $analysis[$m]->total_paid ?? 0;
             $monthlyPending[] = $analysis[$m]->total_pending ?? 0;
+
+            $yearComparisonRows[] = [
+                'month' => $monthName,
+                'previous_bookings' => $previousBookings,
+                'current_bookings' => $currentBookings,
+                'difference' => $currentBookings - $previousBookings,
+            ];
         }
 
         $totalPaid = array_sum($monthlyPaid);
@@ -59,6 +90,8 @@ class AnalysisController extends Controller
             'totalGuests' => array_sum($monthlyGuests),
 
             'year' => $year,
+            'previousYear' => $previousYear,
+            'yearComparisonRows' => $yearComparisonRows,
             'chartMonths' => $chartMonths,
             'monthlySales' => $monthlySales,
             'monthlyBookings' => $monthlyBookings,

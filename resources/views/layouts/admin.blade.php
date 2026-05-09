@@ -151,6 +151,17 @@
             color: #fff;
         }
 
+        .nav-left-sidebar {
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 12px;
+        }
+
+        .nav-left-sidebar .navbar {
+            align-items: flex-start;
+        }
+
         @media (max-width: 992px) {
             .dashboard-header nav.navbar {
                 padding: 10px 12px;

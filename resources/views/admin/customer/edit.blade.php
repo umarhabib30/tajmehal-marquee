@@ -48,7 +48,7 @@
                             <div class="form-group col-md-6">
                                 <label for="idcardnumber" class="col-form-label">ID Card Number</label>
                                 <input id="idcardnumber" name="idcardnumber" type="text" class="form-control"
-                                    maxlength="15" value="{{ old('idcardnumber', $customer->idcardnumber) }}" required>
+                                    maxlength="15" value="{{ old('idcardnumber', $customer->idcardnumber) }}">
                                 @error('idcardnumber')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror

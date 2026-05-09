@@ -55,6 +55,35 @@
     .card-header {
         border-bottom: none;
     }
+
+    .summary-card,
+    .comparison-card {
+        margin-top: 16px;
+    }
+
+    .summary-card .table-responsive,
+    .comparison-card .table-responsive {
+        max-height: 330px;
+        overflow-y: auto;
+    }
+
+    .summary-card .table,
+    .comparison-card .table {
+        font-size: 12px;
+    }
+
+    .summary-card .table th,
+    .summary-card .table td,
+    .comparison-card .table th,
+    .comparison-card .table td {
+        padding: 7px;
+        vertical-align: middle;
+    }
+
+    .summary-card .card-header,
+    .comparison-card .card-header {
+        padding: 12px 16px;
+    }
 </style>
 
 <div class="container-fluid">
@@ -62,7 +91,7 @@
         <h3 class="fw-bold">Sales & Booking Analysis</h3>
         <form method="GET" action="{{ route('admin.analysis.booking') }}" style="margin-left: 20px">
             <select name="year" class="form-control" onchange="this.form.submit()">
-                @foreach(range(now()->year, now()->year - 10) as $y)
+                @foreach(range(now()->year + 5, now()->year - 10) as $y)
                     <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
                 @endforeach
             </select>
@@ -88,15 +117,17 @@
         </div>
     </div>
 
-    <div class="card mt-4">
-        <h5 class="card-header">Monthly Summary ({{ $year }})</h5>
-        <div class="table-responsive">
+    <div class="row g-3 align-items-start">
+        <div class="col-md-8">
+            <div class="card summary-card">
+                <h5 class="card-header">Monthly Summary ({{ $year }})</h5>
+                <div class="table-responsive">
             <table class="table table-bordered table-striped mb-0">
                 <thead>
                     <tr>
                         <th>Month</th>
                         <th>Bookings</th>
-                        <th>Total Guests</th>
+                        <th>Guests</th>
 
                         <th>Total Sales (₨)</th>
                         <th>Total Paid (₨)</th>
@@ -117,6 +148,38 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+    </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card comparison-card">
+                <h5 class="card-header">{{ $previousYear }} vs {{ $year }} Bookings</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>{{ $previousYear }}</th>
+                                <th>{{ $year }}</th>
+                                <th>+/-</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($yearComparisonRows as $row)
+                                <tr>
+                                    <td>{{ $row['month'] }}</td>
+                                    <td>{{ $row['previous_bookings'] }}</td>
+                                    <td>{{ $row['current_bookings'] }}</td>
+                                    <td class="{{ $row['difference'] >= 0 ? 'text-success' : 'text-danger' }}">
+                                        {{ $row['difference'] > 0 ? '+' : '' }}{{ $row['difference'] }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>

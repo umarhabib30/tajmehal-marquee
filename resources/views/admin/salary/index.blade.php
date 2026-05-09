@@ -226,7 +226,10 @@ $(document).ready(function() {
         responsive: true,
         paging: true,
         ordering: true,
-        info: true
+        info: true,
+        dom: "<'row align-items-center mb-2'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-4'f><'col-sm-12 col-md-4'p>>" +
+            "rt" +
+            "<'row'<'col-sm-12 col-md-5'i>>"
     });
 
     // Delete SweetAlert

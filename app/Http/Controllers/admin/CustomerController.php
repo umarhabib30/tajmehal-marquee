@@ -84,7 +84,7 @@ class CustomerController extends Controller
             [
                 'name'         => 'required|string|max:255',
                 'phone'        => 'required|digits:11|unique:customers,phone,' . $id,
-                'idcardnumber' => [ 'regex:/^\d{5}-\d{7}-\d{1}$/'],
+                'idcardnumber' => 'nullable|string|max:15',
                 'address'      => 'required|string|max:500',
             ]
         );
@@ -96,7 +96,7 @@ class CustomerController extends Controller
             }
 
             if ($validator->errors()->has('idcardnumber')) {
-                return redirect()->back()->with('error', 'This ID Card Number is already registered!')->withInput();
+                return redirect()->back()->with('error', 'Please enter a valid ID Card Number.')->withInput();
             }
 
             return redirect()->back()->withErrors($validator)->withInput();
@@ -104,7 +104,12 @@ class CustomerController extends Controller
 
         // ✅ Update record
         $customer = Customer::findOrFail($id);
-        $customer->update($request->all());
+        $data = $request->all();
+        if (empty($data['idcardnumber'])) {
+            unset($data['idcardnumber']);
+        }
+
+        $customer->update($data);
 
         return redirect()->route('customer.index')->with('success', 'Customer updated successfully!');
     }

@@ -1,10 +1,16 @@
 jQuery(document).ready(function($) {
     'use strict';
 
+    var topPaginationDom = "<'row align-items-center mb-2'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-4'f><'col-sm-12 col-md-4'p>>" +
+        "rt" +
+        "<'row'<'col-sm-12 col-md-5'i>>";
+
     if ($("table.first").length) {
 
         $(document).ready(function() {
-            $('table.first').DataTable();
+            $('table.first').DataTable({
+                dom: topPaginationDom
+            });
         });
     }
 
@@ -14,6 +20,7 @@ jQuery(document).ready(function($) {
 
         $(document).ready(function() {
             var table = $('table.second').DataTable({
+                dom: topPaginationDom,
                 lengthChange: false,
                 buttons: ['copy', 'excel', 'pdf', 'print', 'colvis']
             });
@@ -30,6 +37,7 @@ jQuery(document).ready(function($) {
             $(document).ready(function() {
                 var groupColumn = 2;
                 var table = $('#example2').DataTable({
+                    "dom": topPaginationDom,
                     "columnDefs": [
                         { "visible": false, "targets": groupColumn }
                     ],
@@ -70,6 +78,7 @@ jQuery(document).ready(function($) {
     if ($("#example3").length) {
 
         $('#example3').DataTable({
+            dom: topPaginationDom,
             select: {
                 style: 'multi'
             }
@@ -80,6 +89,7 @@ jQuery(document).ready(function($) {
 
         $(document).ready(function() {
             var table = $('#example4').DataTable({
+                dom: topPaginationDom,
                 fixedHeader: true
             });
         });
