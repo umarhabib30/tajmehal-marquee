@@ -84,7 +84,7 @@
 
                                     @if (!empty($booking->discount))
                                         <tr>
-                                            <td><strong>Discount</strong></td>
+                                            <td><strong>Difference</strong></td>
                                             <td class="text-right">- ₨
                                                 {{ number_format($booking->discount) }}</td>
                                         </tr>

@@ -252,7 +252,7 @@
                             </tr>
                             @if (!empty($booking->discount))
                                 <tr>
-                                    <th class="text-start">Discount</th>
+                                    <th class="text-start">Difference</th>
                                     <td>- ₨ {{ number_format($booking->discount, 2) }}</td>
                                 </tr>
                             @endif

@@ -294,7 +294,7 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Discount Amount</label>
+                        <label class="form-label fw-bold">Difference</label>
                         <input type="number" name="discount" id="discount" class="form-control" min="0"
                             value="{{ old('discount', 0) }}">
                     </div>

@@ -19,7 +19,6 @@
                                     <th>Hall</th>
                                     <th>Event Date</th>
                                     <th>Payment Status</th>
-                                    <th>Discount</th>
                                     <th>Status</th>
                                     <th>Details</th>
                                     <th>Print Details</th>
@@ -61,7 +60,6 @@
                                                 {{ number_format($totalAmount, 0) }}
                                             </small>
                                         </td>
-                                        <td>â‚¨ {{ number_format($booking->discount ?? 0, 0) }}</td>
                                         <td>
                                             <span class="badge {{ $booking->statusBadgeClass() }}">
                                                 {{ $booking->status ?? 'Active' }}

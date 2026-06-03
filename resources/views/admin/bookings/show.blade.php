@@ -80,6 +80,8 @@
                     <div class="col-md-4"><strong>Per Head Price:</strong> ₨
                         {{ number_format($booking->per_head_price ?? 0, ) }}</div>
                     <div class="col-md-4"><strong>Tax:</strong> ₨ {{ number_format($booking->tax_amount ?? 0,) }}</div>
+                    <div class="col-md-4"><strong>Difference:</strong> ₨
+                        {{ number_format($booking->discount ?? 0,) }}</div>
                     <div class="col-md-4"><strong>Total Amount:</strong> ₨
                         {{ number_format($booking->total_amount ?? 0,) }}</div>
                     <div class="col-md-4"><strong>Advance Payment:</strong> ₨
