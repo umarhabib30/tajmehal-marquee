@@ -199,6 +199,16 @@
                                 @endforelse
                             </tbody>
 
+                            <tfoot>
+                                <tr class="table-primary">
+                                    <th colspan="6" class="text-end">Total Salary Amount</th>
+                                    <th>
+                                        {{ number_format($salaries->sum('net_salary'), 2) }}
+                                    </th>
+                                    <th class="no-print"></th>
+                                    <th class="no-print"></th>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
 

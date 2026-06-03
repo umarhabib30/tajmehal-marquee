@@ -141,7 +141,8 @@
                             <p><strong>Type:</strong> <span id="bookingType"></span></p>
                             <p><strong>Date:</strong> <span id="bookingDate"></span></p>
                             <p><strong>Time:</strong> <span id="bookingTime"></span></p>
-                            <p class="mb-0"><strong>Hall:</strong> <span id="bookingHall"></span></p>
+                            <p><strong>Hall:</strong> <span id="bookingHall"></span></p>
+                            <p class="mb-0"><strong>Total Guests:</strong> <span id="bookingGuests"></span></p>
                         </div>
                     </div>
 
@@ -239,6 +240,7 @@
                     $('#bookingDate').text(b.event_date || 'N/A');
                     $('#bookingTime').text(`${formatTime(b.start_time)} - ${formatTime(b.end_time)}`);
                     $('#bookingHall').text(b.hall_name || 'N/A');
+                    $('#bookingGuests').text(Number(b.guests_count || 0).toLocaleString());
 
                     // Payment Info
                     const paymentHTML = `

@@ -61,6 +61,7 @@ class CalendarController extends Controller
                     'start_time' => $booking->start_time ?? 'N/A',
                     'end_time' => $booking->end_time ?? 'N/A',
                     'hall_name' => $booking->hall_name ?? 'N/A',
+                    'guests_count' => $booking->guests_count ?? 0,
                     'status' => $booking->status ?? Booking::STATUS_ACTIVE,
                     'status_color' => $color,
                     // Payments
