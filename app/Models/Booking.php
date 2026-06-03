@@ -77,6 +77,7 @@ class Booking extends Model
         'guests_count',
         'per_head_price',
         'tax_amount',
+        'discount',
         'advance_payment',
         'total_amount',
         'remaining_amount',

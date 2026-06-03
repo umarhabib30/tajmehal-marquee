@@ -242,7 +242,14 @@
                         <label class="form-label fw-bold">Notes</label>
                         <textarea name="notes" class="form-control" rows="3">{{ $booking->notes }}</textarea>
                     </div>
-                     <div class="col-md-4">
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Discount Amount</label>
+                        <input type="number" name="discount" id="discount" class="form-control" min="0"
+                            value="{{ old('discount', $booking->discount ?? 0) }}">
+                    </div>
+
+                    <div class="col-md-4">
                         <label class="form-label fw-bold">Status</label>
                         <select name="status" class="form-control">
                             @foreach (\App\Models\Booking::allowedStatuses() as $st)
@@ -299,6 +306,7 @@
         const taxInput = document.getElementById('tax_percent');
         const advanceInput = document.getElementById('advance_payment');
         const decoreInput = document.querySelector('input[name="decore_price"]');
+        const discountInput = document.getElementById('discount');
         const totalField = document.getElementById('total_amount');
         const remainingField = document.getElementById('remaining_amount');
 
@@ -321,10 +329,11 @@
             const perHead = number(priceInput.value);
             const tax = number(taxInput.value); // flat tax amount
             const decore = number(decoreInput.value); // flat decore amount
+            const discount = number(discountInput.value); // flat discount amount
             const advNow = number(advanceInput.value); // current advance field
 
             // New total from editable inputs
-            const newTotal = (guests * perHead) + tax + decore;
+            const newTotal = (guests * perHead) + tax + decore - discount;
 
             // If user changed "Advance Payment", treat it as editing the *advance figure*,
             // not an extra payment. So adjust paid_so_far by the delta vs original advance:
@@ -342,7 +351,7 @@
         }
 
         // Recalculate on input changes
-        [guestInput, priceInput, taxInput, advanceInput, decoreInput].forEach(el => {
+        [guestInput, priceInput, taxInput, advanceInput, decoreInput, discountInput].forEach(el => {
             el.addEventListener('input', calculateAmounts);
             el.addEventListener('change', calculateAmounts);
         });

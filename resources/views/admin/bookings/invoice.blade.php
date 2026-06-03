@@ -82,6 +82,14 @@
                                         </tr>
                                     @endif
 
+                                    @if (!empty($booking->discount))
+                                        <tr>
+                                            <td><strong>Discount</strong></td>
+                                            <td class="text-right">- ₨
+                                                {{ number_format($booking->discount) }}</td>
+                                        </tr>
+                                    @endif
+
                                     <tr class="table-primary">
                                         <td><strong>Grand Total</strong></td>
                                         <td class="text-right">₨

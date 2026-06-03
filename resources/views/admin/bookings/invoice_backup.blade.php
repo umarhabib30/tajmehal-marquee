@@ -250,6 +250,12 @@
                                 <th class="text-start">Tax</th>
                                 <td>₨ {{ number_format($booking->tax_amount, 2) }}</td>
                             </tr>
+                            @if (!empty($booking->discount))
+                                <tr>
+                                    <th class="text-start">Discount</th>
+                                    <td>- ₨ {{ number_format($booking->discount, 2) }}</td>
+                                </tr>
+                            @endif
                             <tr>
                                 <th class="text-start">Total Amount</th>
                                 <td>₨ {{ number_format($booking->total_amount, 2) }}</td>

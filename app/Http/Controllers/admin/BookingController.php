@@ -68,6 +68,7 @@ class BookingController extends Controller
             'guests_count' => 'required|integer|min:1',
             'per_head_price' => 'required|numeric|min:0',
             'tax_amount' => 'nullable|numeric',
+            'discount' => 'nullable|numeric|min:0',
             'advance_payment' => 'nullable|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
             'remaining_amount' => 'required|numeric|min:0',
@@ -85,6 +86,7 @@ class BookingController extends Controller
         $validated['booking_date'] = Carbon::now();
         $validated['decore_price'] = $request->decore_price ?? 0;
         $validated['tax_amount'] = $request->tax_amount ?? 0;
+        $validated['discount'] = $request->discount ?? 0;
         $validated['advance_payment'] = $request->advance_payment ?? 0;
         $validated['status'] = $request->status ?? Booking::STATUS_ACTIVE;
 
@@ -190,6 +192,7 @@ class BookingController extends Controller
             'guests_count' => 'required|integer|min:1',
             'per_head_price' => 'required|numeric|min:0',
             'tax_amount' => 'nullable|numeric',
+            'discount' => 'nullable|numeric|min:0',
             'advance_payment' => 'nullable|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
             'remaining_amount' => 'required|numeric|min:0',
@@ -223,6 +226,7 @@ class BookingController extends Controller
 
         $validated['decore_price'] = $request->decore_price ?? 0;
         $validated['tax_amount'] = $request->tax_amount ?? 0;
+        $validated['discount'] = $request->discount ?? 0;
         $validated['advance_payment'] = $request->advance_payment ?? 0;
 
         $booking = Booking::findOrFail($request->id);

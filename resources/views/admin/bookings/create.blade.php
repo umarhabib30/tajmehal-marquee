@@ -294,6 +294,12 @@
                     </div>
 
                     <div class="col-md-4">
+                        <label class="form-label fw-bold">Discount Amount</label>
+                        <input type="number" name="discount" id="discount" class="form-control" min="0"
+                            value="{{ old('discount', 0) }}">
+                    </div>
+
+                    <div class="col-md-4">
                         <label class="form-label fw-bold">Booking status</label>
                         <select name="status" class="form-control">
                             <option value="Active" {{ old('status', 'Active') === 'Active' ? 'selected' : '' }}>Active
@@ -445,6 +451,7 @@
         const taxInput = document.getElementById('tax_percent');
         const advanceInput = document.getElementById('advance_payment');
         const decoreInput = document.querySelector('input[name="decore_price"]'); // ✅ new
+        const discountInput = document.getElementById('discount');
         const totalField = document.getElementById('total_amount');
         const remainingField = document.getElementById('remaining_amount');
 
@@ -455,9 +462,10 @@
             const tax = parseFloat(taxInput.value) || 0; // flat tax amount
             const advance = parseFloat(advanceInput.value) || 0;
             const decore = parseFloat(decoreInput.value) || 0; // ✅ new
+            const discount = parseFloat(discountInput.value) || 0;
 
-            // Base total
-            let total = (guests * perHead) + tax + decore;
+            // Total after applying the flat discount amount
+            let total = (guests * perHead) + tax + decore - discount;
 
             // Remaining after advance
             const remaining = total - advance;
@@ -468,7 +476,7 @@
 
 
 
-        [guestInput, priceInput, taxInput, advanceInput, decoreInput].forEach(el => {
+        [guestInput, priceInput, taxInput, advanceInput, decoreInput, discountInput].forEach(el => {
             el.addEventListener('input', calculateAmounts);
         });
 

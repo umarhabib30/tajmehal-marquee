@@ -79,6 +79,32 @@
             color: #fff;
         }
 
+        .password-field {
+            position: relative;
+        }
+
+        .password-field .form-control {
+            padding-right: 50px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50px;
+            height: 100%;
+            border: 0;
+            background: transparent;
+            color: #000;
+            cursor: pointer;
+        }
+
+        .password-toggle:hover,
+        .password-toggle:focus {
+            color: #000;
+            outline: none;
+        }
+
         /* ✅ Button */
         .btn-primary {
             background-color: #fff;
@@ -127,10 +153,16 @@
                     </div>
 
                     <div class="form-group">
-                        <input id="password" type="password"
-                               class="form-control form-control-lg @error('password') is-invalid @enderror"
-                               name="password" required autocomplete="current-password"
-                               placeholder="Password">
+                        <div class="password-field">
+                            <input id="password" type="password"
+                                   class="form-control form-control-lg @error('password') is-invalid @enderror"
+                                   name="password" required autocomplete="current-password"
+                                   placeholder="Password">
+                            <button id="password-toggle" class="password-toggle" type="button"
+                                    aria-label="Show password" title="Show password">
+                                <i class="fa fa-eye" aria-hidden="true"></i>
+                            </button>
+                        </div>
 
                         @error('password')
                             <span class="invalid-feedback d-block text-white" role="alert">
@@ -156,5 +188,18 @@
     <!-- JS -->
     <script src="../assets/vendor/jquery/jquery-3.3.1.min.js"></script>
     <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.js"></script>
+    <script>
+        document.getElementById('password-toggle').addEventListener('click', function () {
+            var passwordInput = document.getElementById('password');
+            var passwordIcon = this.querySelector('i');
+            var isPasswordVisible = passwordInput.type === 'text';
+
+            passwordInput.type = isPasswordVisible ? 'password' : 'text';
+            passwordIcon.classList.toggle('fa-eye', isPasswordVisible);
+            passwordIcon.classList.toggle('fa-eye-slash', !isPasswordVisible);
+            this.setAttribute('aria-label', isPasswordVisible ? 'Show password' : 'Hide password');
+            this.setAttribute('title', isPasswordVisible ? 'Show password' : 'Hide password');
+        });
+    </script>
 </body>
 </html>
