@@ -54,6 +54,10 @@
             background: #6c757d;
         }
 
+        .legend-pending {
+            background: #ffc107;
+        }
+
         .legend-done {
             background: #28a745;
         }
@@ -99,6 +103,7 @@
             </div>
             <div class="booking-status-legend mt-2 mt-md-0 text-muted px-3">
                 <span class="me-3"><span class="legend-swatch legend-active"></span>Active</span>
+                <span class="me-3"><span class="legend-swatch legend-pending"></span>Pending</span>
                 <span class="me-3"><span class="legend-swatch legend-done"></span>Done</span>
                 <span><span class="legend-swatch legend-cancelled"></span>Cancelled</span>
             </div>

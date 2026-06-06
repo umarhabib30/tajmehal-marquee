@@ -30,14 +30,21 @@ class CalendarController extends Controller
         $bookings = \App\Models\Booking::with(['customer', 'payments'])->get();
 
         $events = $bookings->map(function ($booking) {
-            $color = Booking::calendarColor($booking->status);
-
             $eventDate = $booking->event_date;
             if (empty($eventDate))
                 return null;
 
             $totalPaid = $booking->payments->sum('amount');
             $pendingAmount = max($booking->total_amount - $totalPaid, 0);
+            $status = $booking->status ?? Booking::STATUS_ACTIVE;
+
+            if ($status !== Booking::STATUS_CANCELLED && $pendingAmount > 0) {
+                $status = 'Pending';
+            }
+
+            $color = $status === 'Pending'
+                ? '#ffc107'
+                : Booking::calendarColor($booking->status);
 
             return [
                 'id' => $booking->id,
@@ -62,7 +69,7 @@ class CalendarController extends Controller
                     'end_time' => $booking->end_time ?? 'N/A',
                     'hall_name' => $booking->hall_name ?? 'N/A',
                     'guests_count' => $booking->guests_count ?? 0,
-                    'status' => $booking->status ?? Booking::STATUS_ACTIVE,
+                    'status' => $status,
                     'status_color' => $color,
                     // Payments
                     'total_amount' => $booking->total_amount ?? 0,
