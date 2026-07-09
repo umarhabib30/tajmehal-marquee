@@ -112,8 +112,28 @@ class AnalysisController extends Controller
         $category = $request->get('category', 'Food');
         $categories = ['Food', 'Electronics', 'Furniture', 'Decoration', 'Crockery'];
 
-        $startDate = Carbon::now()->subMonth()->startOfMonth();
-        $endDate = Carbon::now();
+        $defaultStart = Carbon::now()->subMonth()->startOfMonth();
+        $defaultEnd = Carbon::now();
+
+        try {
+            $startDate = $request->filled('start_date')
+                ? Carbon::parse($request->input('start_date'))->startOfDay()
+                : $defaultStart->copy()->startOfDay();
+        } catch (\Throwable $e) {
+            $startDate = $defaultStart->copy()->startOfDay();
+        }
+
+        try {
+            $endDate = $request->filled('end_date')
+                ? Carbon::parse($request->input('end_date'))->endOfDay()
+                : $defaultEnd->copy()->endOfDay();
+        } catch (\Throwable $e) {
+            $endDate = $defaultEnd->copy()->endOfDay();
+        }
+
+        if ($startDate->gt($endDate)) {
+            [$startDate, $endDate] = [$endDate->copy()->startOfDay(), $startDate->copy()->endOfDay()];
+        }
 
         $items = Inventory::where('category', $category)->get();
 
@@ -155,6 +175,7 @@ class AnalysisController extends Controller
 
             $rows[] = [
                 'name' => $item->name,
+                'unit' => $item->quantity_type,
                 'total_in' => $totalIn,
                 'total_out' => $totalOut,
                 'total_price_in' => $totalPriceIn,
@@ -162,6 +183,16 @@ class AnalysisController extends Controller
                 'current_qty' => $currentQty,
             ];
         }
+
+        // Exclude fully empty items from report output:
+        // total_in = 0, total_out = 0, current_qty = 0
+        $rows = array_values(array_filter($rows, function ($row) {
+            return !(
+                (float) $row['total_in'] == 0.0
+                && (float) $row['total_out'] == 0.0
+                && (float) $row['current_qty'] == 0.0
+            );
+        }));
 
         usort($rows, function ($a, $b) {
             return $b['total_out'] <=> $a['total_out'];
@@ -171,6 +202,7 @@ class AnalysisController extends Controller
 
         // ✅ TABLE arrays (ALL ITEMS)
         $labelsAll = [];
+        $perItemUnitsAll = [];
         $perItemPriceInAll = [];
         $perItemQtyInAll = [];
         $perItemQtyOutAll = [];
@@ -184,6 +216,7 @@ class AnalysisController extends Controller
 
         foreach ($rows as $r) {
             $labelsAll[] = $r['name'];
+            $perItemUnitsAll[] = $r['unit'] ?? '';
             $perItemQtyInAll[] = $r['total_in'];
             $perItemQtyOutAll[] = $r['total_out'];
 
@@ -216,6 +249,7 @@ class AnalysisController extends Controller
 
             // ✅ TABLE (ALL)
             'chartMonths' => $labelsAll,
+            'monthlyUnits' => $perItemUnitsAll,
             'monthlySales' => $perItemPriceInAll,
             'monthlyBookings' => $perItemQtyInAll,
             'monthlyPaid' => $perItemQtyOutAll,

@@ -17,7 +17,9 @@ class BookingController extends Controller
     // Index page
     public function index(Request $request)
     {
-        $bookings = Booking::with('customer')->orderBy('booking_date', 'desc')->get();
+        $bookings = Booking::with('customer')
+            ->orderByDesc('id')
+            ->get();
 
         $data = [
             'bookings' => $bookings,

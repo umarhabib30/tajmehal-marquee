@@ -16,6 +16,17 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
+    <style>
+        html,
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font-family: sans-serif !important;
+        }
+    </style>
 </head>
 
 <body>

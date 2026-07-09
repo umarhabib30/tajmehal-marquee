@@ -82,7 +82,10 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
         Route::get('admin/inventory/crockery', [InventoryController::class, 'crockeryInventory'])->name('inventory.crockery');
         Route::get('admin/inventory/electronics', [InventoryController::class, 'electronicsInventory'])->name('inventory.electronics');
         Route::get('admin/inventory/stock/{id}', [InventoryController::class, 'stockInventory'])->name('inventory.stock');
+        Route::get('admin/inventory/stock-history', [InventoryController::class, 'stockResetHistory'])->name('inventory.stock.history');
         Route::post('admin/inventory/stock/update', [InventoryController::class, 'updateStock'])->name('inventory.stock.update');
+        Route::post('admin/inventory/stock/reset-all', [InventoryController::class, 'resetAllStockRecords'])->name('inventory.stock.reset_all');
+        Route::post('admin/inventory/stock/restore/{batchId}', [InventoryController::class, 'restoreStockReset'])->name('inventory.stock.restore');
 
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('booking', [BookingController::class, 'index'])->name('booking.index');

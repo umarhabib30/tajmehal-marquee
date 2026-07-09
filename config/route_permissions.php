@@ -38,7 +38,10 @@ return [
         'inventory.crockery' => ['inventory', 'view'],
         'inventory.electronics' => ['inventory', 'view'],
         'inventory.stock' => ['inventory', 'view'],
+        'inventory.stock.history' => ['inventory', 'view'],
         'inventory.stock.update' => ['inventory', 'edit'],
+        'inventory.stock.reset_all' => ['inventory', 'delete'],
+        'inventory.stock.restore' => ['inventory', 'edit'],
 
         'admin.booking.index' => ['booking', 'view'],
         'admin.booking.show' => ['booking', 'view'],

@@ -1,9 +1,82 @@
 @extends('layouts.admin')
+@section('style')
+    <style>
+        .inventory-page .card {
+            border-top: 3px solid #352a86;
+            border-radius: 10px;
+            box-shadow: 0 8px 22px rgba(26, 20, 77, 0.08);
+            overflow: hidden;
+        }
+
+        .inventory-page .card-header {
+            background: linear-gradient(120deg, #332881 0%, #4b3eb6 100%);
+            color: #fff;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 14px 16px;
+            border-bottom: 0;
+        }
+
+        .inventory-title {
+            color: #fff;
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .inventory-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .inventory-header-btn {
+            min-width: 170px;
+            height: 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+
+        .inventory-header-btn.btn-success {
+            background: #ffffff;
+            color: #352a86;
+            border-color: #ffffff;
+        }
+
+        .inventory-header-btn.btn-danger {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+        }
+    </style>
+@endsection
 @section('content')
-    <div class="row">
+    <div class="row inventory-page">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="card">
-                <h5 class="card-header">Inventory Table</h5>
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                    <h5 class="inventory-title mb-2">Inventory Table</h5>
+                    <div class="inventory-header-actions mb-2">
+                        <a href="{{ route('inventory.create') }}" class="btn btn-success inventory-header-btn">
+                            <i class="fa fa-plus"></i> Add New Item
+                        </a>
+
+                        <a href="{{ route('inventory.stock.history') }}" class="btn btn-info inventory-header-btn">
+                            <i class="fa fa-history"></i> Backup History / Restore
+                        </a>
+
+                        <form id="reset-stock-form" action="{{ route('inventory.stock.reset_all') }}" method="POST"
+                            style="display:inline-block;">
+                            @csrf
+                            <button type="button" class="btn btn-danger inventory-header-btn" id="reset-stock-btn">
+                                <i class="fa fa-trash"></i> Reset All In/Out Records
+                            </button>
+                        </form>
+                    </div>
+                </div>
                 <div class="card-body">
 
                     {{-- Success Message --}}
@@ -20,9 +93,6 @@
                             });
                         </script>
                     @endif
-
-                    {{-- Add New Item --}}
-                    <a href="{{ route('inventory.create') }}" class="btn btn-success mb-3">Add New Item</a>
 
                     {{-- Category Filter --}}
                     <form method="GET" action="{{ route('inventory.index') }}" class="mb-3">
@@ -123,6 +193,32 @@
                     });
                 });
             });
+
+            const resetButton = document.getElementById('reset-stock-btn');
+            if (resetButton) {
+                resetButton.addEventListener('click', function() {
+                    Swal.fire({
+                        title: 'Reset all stock records?',
+                        html: `
+                            <div style="text-align:left;">
+                                <p>This will delete <b>all inventory stock in/out records</b> for all items.</p>
+                                <p>Inventory items will remain, and deleted records will be saved in backup history.</p>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, reset all records',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('reset-stock-form').submit();
+                        }
+                    });
+                });
+            }
+
         });
     </script>
 @endsection

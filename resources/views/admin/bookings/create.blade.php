@@ -302,6 +302,8 @@
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Booking status</label>
                         <select name="status" class="form-control">
+                            <option value="Pending" {{ old('status') === 'Pending' ? 'selected' : '' }}>Pending
+                            </option>
                             <option value="Active" {{ old('status', 'Active') === 'Active' ? 'selected' : '' }}>Active
                             </option>
                             <option value="Done" {{ old('status') === 'Done' ? 'selected' : '' }}>Done</option>

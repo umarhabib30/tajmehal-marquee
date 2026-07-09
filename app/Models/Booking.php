@@ -9,6 +9,8 @@ class Booking extends Model
 {
     use HasFactory;
 
+    public const STATUS_PENDING = 'Pending';
+
     public const STATUS_ACTIVE = 'Active';
 
     public const STATUS_DONE = 'Done';
@@ -19,6 +21,7 @@ class Booking extends Model
     public static function allowedStatuses(): array
     {
         return [
+            self::STATUS_PENDING,
             self::STATUS_ACTIVE,
             self::STATUS_DONE,
             self::STATUS_CANCELLED,
@@ -30,10 +33,12 @@ class Booking extends Model
         $raw = trim((string) $status);
 
         return match ($raw) {
+            self::STATUS_PENDING => '#ffc107',
             self::STATUS_ACTIVE => '#6c757d',
             self::STATUS_DONE => '#28a745',
             self::STATUS_CANCELLED => '#dc3545',
             default => match (strtolower($raw)) {
+                'pending' => '#ffc107',
                 'completed' => '#28a745',
                 'cancelled', 'canceled' => '#dc3545',
                 'active' => '#6c757d',
@@ -47,14 +52,16 @@ class Booking extends Model
         $raw = trim((string) $this->status);
 
         return match ($raw) {
-            self::STATUS_ACTIVE => 'bg-secondary text-white',
-            self::STATUS_DONE => 'bg-success',
-            self::STATUS_CANCELLED => 'bg-danger',
+            self::STATUS_PENDING => 'badge-warning',
+            self::STATUS_ACTIVE => 'badge-secondary',
+            self::STATUS_DONE => 'badge-success',
+            self::STATUS_CANCELLED => 'badge-danger',
             default => match (strtolower($raw)) {
-                'completed' => 'bg-success',
-                'cancelled', 'canceled' => 'bg-danger',
-                'active' => 'bg-secondary text-white',
-                default => 'bg-secondary text-white',
+                'pending' => 'badge-warning',
+                'completed' => 'badge-success',
+                'cancelled', 'canceled' => 'badge-danger',
+                'active' => 'badge-secondary',
+                default => 'badge-secondary',
             },
         };
     }

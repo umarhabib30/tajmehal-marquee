@@ -2,6 +2,198 @@
 
 @section('style')
 <style>
+    :root {
+        --salary-primary: #352a86;
+        --salary-primary-soft: #f2f0ff;
+        --salary-border: #dfe4f2;
+        --salary-text: #2f3547;
+        --salary-muted: #6b7280;
+    }
+
+    .salary-page .card {
+        border-top: 3px solid var(--salary-primary);
+        border-radius: 10px;
+        box-shadow: 0 8px 22px rgba(26, 20, 77, 0.08);
+    }
+
+    .salary-page .card-header {
+        background: linear-gradient(120deg, #332881 0%, #4b3eb6 100%);
+        color: #fff;
+        border-radius: 10px 10px 0 0 !important;
+        padding: 14px 16px;
+    }
+
+    .salary-title {
+        font-weight: 700;
+        margin: 0;
+        font-size: 1.2rem;
+        color: #ffffff !important;
+    }
+
+    .salary-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .salary-action-btn {
+        min-width: 168px;
+        height: 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .salary-action-btn.btn-primary {
+        background: #ffffff;
+        color: var(--salary-primary);
+        border-color: #ffffff;
+    }
+
+    .salary-action-btn.btn-secondary {
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+    }
+
+    .salary-filter-bar {
+        border: 1px solid var(--salary-border);
+        border-top: 3px solid var(--salary-primary);
+        border-radius: 10px;
+        background: linear-gradient(180deg, #fcfbff 0%, #ffffff 100%);
+        padding: 12px;
+        margin-bottom: 14px;
+    }
+
+    .salary-filter-wrap {
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .salary-filter-left {
+        flex: 1 1 58%;
+        min-width: 360px;
+    }
+
+    .salary-filter-left .salary-filter-controls {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .salary-filter-right {
+        flex: 1 1 38%;
+        min-width: 320px;
+        border: 1px solid #e3e8f6;
+        border-radius: 8px;
+        background: #f8f9ff;
+        padding: 10px 12px;
+    }
+
+    .salary-filter-field {
+        min-width: 170px;
+    }
+
+    .salary-filter-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #56617a;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: 0.35rem;
+    }
+
+    .salary-filter-control {
+        width: 100%;
+        height: 40px;
+        border: 1px solid #d7dced;
+        border-radius: 8px;
+        font-weight: 500;
+        color: var(--salary-text);
+        background: #fff;
+    }
+
+    .salary-filter-control:focus {
+        border-color: var(--salary-primary);
+        box-shadow: 0 0 0 0.2rem rgba(53, 42, 134, 0.14);
+    }
+
+    .salary-filter-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .salary-filter-btn {
+        min-width: 102px;
+        height: 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .salary-filter-hint {
+        margin-top: 8px;
+        font-size: 0.82rem;
+        color: var(--salary-muted);
+    }
+
+    .salary-filter-meta {
+        margin-top: 0;
+        font-size: 0.82rem;
+        color: #465066;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .salary-filter-meta .title {
+        font-size: 0.88rem;
+        color: var(--salary-primary);
+        font-weight: 700;
+    }
+
+    .print-only-report-meta {
+        display: none;
+    }
+
+    .salary-page .table thead th {
+        background: #f3f5fd;
+        color: #3f4a62 !important;
+        font-weight: 700;
+        border-color: #e1e6f3;
+    }
+
+    .salary-page .table td {
+        border-color: #e7ebf6;
+        color: #374151;
+        vertical-align: middle;
+    }
+
+    .salary-page .table tbody tr:hover {
+        background: #f8f9ff;
+    }
+
+    .salary-row-actions .btn {
+        border-radius: 7px;
+        font-weight: 600;
+    }
+
+    .salary-total-row th {
+        background: #edf1ff !important;
+        color: #2f2479 !important;
+    }
+
 @media print {
 
     /* Reset default spacing */
@@ -65,6 +257,16 @@
         font-size: 15px !important;
     }
 
+    .print-only-report-meta {
+        display: block !important;
+        margin-bottom: 8px !important;
+        border-bottom: 1px solid #cfd3df !important;
+        padding-bottom: 6px !important;
+        color: #111 !important;
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+    }
+
     @page {
         size: A4;
         margin: 8mm !important;
@@ -77,20 +279,20 @@
 
 @section('content')
 
-<div class="row">
+<div class="row salary-page">
     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
         <div class="card">
 
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                <h4 class="mb-3">{{ $heading }}</h4>
+                <h4 class="salary-title mb-2">{{ $heading }}</h4>
 
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('admin.salary.create') }}" class="btn btn-primary mb-3 no-print">
-                        + Generate New Salary
+                <div class="salary-header-actions no-print mb-2">
+                    <a href="{{ route('admin.salary.create') }}" class="btn btn-primary salary-action-btn">
+                        <i class="fa fa-plus"></i> Generate New Salary
                     </a>
 
-                    <a href="javascript:void(0)" onclick="printSalaryOnly()" class="btn btn-secondary mb-3 no-print">
-                        🖨 Print Salary Table
+                    <a href="javascript:void(0)" onclick="printSalaryOnly()" class="btn btn-secondary salary-action-btn">
+                        <i class="fa fa-print"></i> Print Salary Table
                     </a>
                 </div>
             </div>
@@ -98,51 +300,68 @@
             <div class="card-body">
 
                 {{-- ✅ Month / Year Filter Controls --}}
-                <div class="mb-3 d-flex justify-content-between flex-wrap bg-white p-2 shadow-sm rounded no-print">
-                    <div>
-                        <label>Select Month:</label>
-                        <select id="selectMonth" class="form-control d-inline-block w-auto">
-                            @for ($m = 1; $m <= 12; $m++)
-                                <option value="{{ $m }}" {{ (int)$m == (int)$month ? 'selected' : '' }}>
-                                    {{ \Carbon\Carbon::create()->month($m)->format('F') }}
-                                </option>
-                            @endfor
-                        </select>
+                <div class="salary-filter-bar no-print">
+                    <div class="salary-filter-wrap">
+                        <div class="salary-filter-left">
+                            <div class="salary-filter-controls">
+                                <div class="salary-filter-field">
+                                    <label class="salary-filter-label">Month</label>
+                                    <select id="selectMonth" class="form-control salary-filter-control">
+                                        @for ($m = 1; $m <= 12; $m++)
+                                            <option value="{{ $m }}" {{ (int)$m == (int)$month ? 'selected' : '' }}>
+                                                {{ \Carbon\Carbon::create()->month($m)->format('F') }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                </div>
 
-                        <label>Select Year:</label>
-                        <select id="selectYear" class="form-control d-inline-block w-auto">
-                            @for ($y = date('Y') - 5; $y <= date('Y'); $y++)
-                                <option value="{{ $y }}" {{ (int)$y == (int)$year ? 'selected' : '' }}>
-                                    {{ $y }}
-                                </option>
-                            @endfor
-                        </select>
+                                <div class="salary-filter-field">
+                                    <label class="salary-filter-label">Year</label>
+                                    <select id="selectYear" class="form-control salary-filter-control">
+                                        @for ($y = date('Y') - 5; $y <= date('Y'); $y++)
+                                            <option value="{{ $y }}" {{ (int)$y == (int)$year ? 'selected' : '' }}>
+                                                {{ $y }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                </div>
 
-                        <button id="changeSalaryMonth" class="btn btn-primary btn-sm">Go</button>
-                        <button id="salaryThisMonth" class="btn btn-secondary btn-sm">This Month</button>
+                                <div>
+                                    <label class="salary-filter-label">Actions</label>
+                                    <div class="salary-filter-actions">
+                                        <button id="changeSalaryMonth" class="btn btn-primary salary-filter-btn">
+                                            <i class="fa fa-search"></i> Go
+                                        </button>
+                                        <button id="salaryThisMonth" class="btn btn-outline-secondary salary-filter-btn">
+                                            <i class="fa fa-undo"></i> This Month
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="salary-filter-hint">
+                                Tip: select month and year, then click Go to load salary report.
+                            </div>
+                        </div>
+
+                        <div class="salary-filter-right">
+                            <div class="salary-filter-meta">
+                                <div class="title">The Taj Mahal Marquee</div>
+                                <div>Link Road Aqil Shah, Shahpur</div>
+                                <div>Contact: 0300-8700443 | 0324-1111963</div>
+                                <div>Salary Report - {{ \Carbon\Carbon::createFromDate($year, $month, 1)->format('F Y') }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- ====================== PRINT AREA ============================== -->
                 <div id="printArea">
-
-                    <!-- BRANDING HEADER -->
-                    <header class="pb-2 border-bottom mb-3 d-flex justify-content-between align-items-center print-header">
-                        <div class="logo-box">
-                            <img src="{{ asset('assets/images/logo.jpg') }}"
-                                 alt="Taj Mahal Marquee Logo"
-                                 style="height: 90px; width: auto;">
-                        </div>
-
-                        <div class="text-end">
-                            <h2 class="mb-0 text-primary fw-bold">The Taj Mahal Marquee</h2>
-                            <div class="small text-secondary">Link Road Aqil Shah, Shahpur</div>
-                            <div class="small">Contact: 0300-8700443 | 0324-1111963</div>
-                            <h6 class="fw-semibold mt-1 text-dark">
-                                Salary Report - {{ \Carbon\Carbon::createFromDate($year, $month, 1)->format('F Y') }}
-                            </h6>
-                        </div>
-                    </header>
+                    <div class="print-only-report-meta">
+                        <div><strong>The Taj Mahal Marquee</strong></div>
+                        <div>Link Road Aqil Shah, Shahpur</div>
+                        <div>Contact: 0300-8700443 | 0324-1111963</div>
+                        <div><strong>Salary Report - {{ \Carbon\Carbon::createFromDate($year, $month, 1)->format('F Y') }}</strong></div>
+                    </div>
 
                     <!-- SALARY TABLE -->
                     <div class="table-responsive">
@@ -175,13 +394,13 @@
 
                                         <td><strong>{{ number_format($s->net_salary, 2) }}</strong></td>
 
-                                        <td class="no-print">
+                                        <td class="no-print salary-row-actions">
                                             <a href="{{ route('admin.salary.show', $s->id) }}" class="btn btn-info btn-sm">
                                                 Show
                                             </a>
                                         </td>
 
-                                        <td class="no-print">
+                                        <td class="no-print salary-row-actions">
                                             <form action="{{ route('admin.salary.delete', $s->id) }}" method="POST"
                                                   class="d-inline delete-salary-form">
                                                 @csrf
@@ -200,7 +419,7 @@
                             </tbody>
 
                             <tfoot>
-                                <tr class="table-primary">
+                                <tr class="table-primary salary-total-row">
                                     <th colspan="6" class="text-end">Total Salary Amount</th>
                                     <th>
                                         {{ number_format($salaries->sum('net_salary'), 2) }}

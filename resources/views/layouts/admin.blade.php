@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
     <link href="{{ asset('assets/vendor/fonts/circular-std/style.css" rel="stylesheet') }}">
     <link rel="stylesheet" href="{{ asset('assets/libs/css/style.css') }}">
-    <link rel="stylesheet" href="{{ 'assets/vendor/fonts/fontawesome/css/fontawesome-all.css' }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/fontawesome/css/fontawesome-all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/charts/chartist-bundle/chartist.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/charts/morris-bundle/morris.css') }}">
     <link rel="stylesheet"
@@ -42,6 +42,15 @@
     <title>{{ $title }}</title>
 
     <style>
+        html,
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font-family: sans-serif !important;
+        }
+
         /* =========================
    GLOBAL NAVBAR STYLE
 ========================== */

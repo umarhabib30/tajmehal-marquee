@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class CalendarController extends Controller
 {
@@ -36,15 +37,23 @@ class CalendarController extends Controller
 
             $totalPaid = $booking->payments->sum('amount');
             $pendingAmount = max($booking->total_amount - $totalPaid, 0);
-            $status = $booking->status ?? Booking::STATUS_ACTIVE;
+            $rawStatus = trim((string) ($booking->status ?? Booking::STATUS_ACTIVE));
+            $status = $rawStatus !== '' ? $rawStatus : Booking::STATUS_ACTIVE;
+            $isPastEvent = Carbon::parse($eventDate)->isBefore(Carbon::today());
+            $isPending = strcasecmp($status, Booking::STATUS_PENDING) === 0;
+            $isActive = strcasecmp($status, Booking::STATUS_ACTIVE) === 0;
 
-            if ($status !== Booking::STATUS_CANCELLED && $pendingAmount > 0) {
-                $status = 'Pending';
+            // Business rule:
+            // - Pending bookings are always yellow
+            // - Active bookings in the past are treated as payment-pending (yellow)
+            // - Active bookings today/future stay active (grey)
+            if ($isPending || ($isActive && $isPastEvent)) {
+                $status = Booking::STATUS_PENDING;
+                $color = '#ffc107';
+            } else {
+                $color = Booking::calendarColor($status);
             }
-
-            $color = $status === 'Pending'
-                ? '#ffc107'
-                : Booking::calendarColor($booking->status);
+            $textColor = $color === '#ffc107' ? '#212529' : '#ffffff';
 
             return [
                 'id' => $booking->id,
@@ -54,7 +63,7 @@ class CalendarController extends Controller
                 'end' => "{$eventDate}T" . ($booking->end_time ?? '23:59:59'),
                 'backgroundColor' => $color,
                 'borderColor' => $color,
-                'textColor' => '#ffffff',
+                'textColor' => $textColor,
                 'allDay' => false,
                 'extendedProps' => [
                     // Customer Info
@@ -71,6 +80,7 @@ class CalendarController extends Controller
                     'guests_count' => $booking->guests_count ?? 0,
                     'status' => $status,
                     'status_color' => $color,
+                    'status_text_color' => $textColor,
                     // Payments
                     'total_amount' => $booking->total_amount ?? 0,
                     'total_paid' => $totalPaid,

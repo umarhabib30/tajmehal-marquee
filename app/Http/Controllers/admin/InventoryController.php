@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Inventory;
 use App\Models\InventoryStock;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class InventoryController extends Controller
@@ -159,6 +160,180 @@ class InventoryController extends Controller
         ];
 
         return view('admin.inventory.index', $data);
+    }
+
+    /**
+     * Show stock reset backup history with restore actions.
+     */
+    public function stockResetHistory()
+    {
+        $resetHistory = DB::table('inventory_stock_reset_batches as b')
+            ->leftJoin('users as deleted_user', 'deleted_user.id', '=', 'b.deleted_by')
+            ->leftJoin('users as restored_user', 'restored_user.id', '=', 'b.restored_by')
+            ->select(
+                'b.id',
+                'b.total_records',
+                'b.deleted_at',
+                'b.restored_at',
+                'deleted_user.name as deleted_by_name',
+                'restored_user.name as restored_by_name'
+            )
+            ->orderByDesc('b.id')
+            ->paginate(20);
+
+        return view('admin.inventory.stock_history', [
+            'heading' => 'Inventory',
+            'title' => 'Stock Backup History',
+            'active' => 'inventory',
+            'resetHistory' => $resetHistory,
+        ]);
+    }
+
+    /**
+     * Reset all inventory stock in/out records while keeping inventory items.
+     * Deleted records are backed up for restore.
+     */
+    public function resetAllStockRecords(Request $request)
+    {
+        $stockRows = DB::table('inventory_stocks')->get();
+
+        if ($stockRows->isEmpty()) {
+            return redirect()
+                ->route('inventory.index')
+                ->with('error', 'No stock records found to reset.');
+        }
+
+        DB::transaction(function () use ($stockRows) {
+            $now = now();
+
+            $batchId = DB::table('inventory_stock_reset_batches')->insertGetId([
+                'total_records' => $stockRows->count(),
+                'deleted_by' => auth()->id(),
+                'deleted_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $inventoryMeta = Inventory::query()
+                ->select('id', 'name', 'category', 'quantity_type')
+                ->get()
+                ->keyBy('id');
+
+            $backupRows = [];
+            foreach ($stockRows as $row) {
+                $item = $inventoryMeta->get($row->inventory_id);
+                $backupRows[] = [
+                    'batch_id' => $batchId,
+                    'original_stock_id' => $row->id,
+                    'inventory_id' => $row->inventory_id,
+                    'inventory_name' => $item->name ?? null,
+                    'inventory_category' => $item->category ?? null,
+                    'inventory_unit' => $item->quantity_type ?? null,
+                    'date' => $row->date,
+                    'quantity_in' => $row->quantity_in,
+                    'quantity_out' => $row->quantity_out,
+                    'price_per_unit' => $row->price_per_unit,
+                    'warranty_period' => $row->warranty_period,
+                    'supplier_name' => $row->supplier_name,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            foreach (array_chunk($backupRows, 500) as $chunk) {
+                DB::table('inventory_stock_reset_records')->insert($chunk);
+            }
+
+            DB::table('inventory_stocks')->delete();
+
+            // Keep items, but reset their live quantity after clearing stock ledger.
+            DB::table('inventories')->update([
+                'quantity' => 0,
+                'updated_at' => $now,
+            ]);
+        });
+
+        return redirect()
+            ->route('inventory.index')
+            ->with('success', 'All inventory stock in/out records have been reset and backed up successfully.');
+    }
+
+    /**
+     * Restore previously reset stock records from backup history.
+     */
+    public function restoreStockReset($batchId)
+    {
+        $batch = DB::table('inventory_stock_reset_batches')->where('id', $batchId)->first();
+
+        if (!$batch) {
+            return redirect()
+                ->route('inventory.stock.history')
+                ->with('error', 'Backup batch not found.');
+        }
+
+        if (!empty($batch->restored_at)) {
+            return redirect()
+                ->route('inventory.stock.history')
+                ->with('error', 'This backup batch has already been restored.');
+        }
+
+        $records = DB::table('inventory_stock_reset_records')
+            ->where('batch_id', $batchId)
+            ->get();
+
+        if ($records->isEmpty()) {
+            return redirect()
+                ->route('inventory.stock.history')
+                ->with('error', 'No backup records found for this batch.');
+        }
+
+        DB::transaction(function () use ($batchId, $records) {
+            $now = now();
+
+            $rowsToInsert = [];
+            foreach ($records as $record) {
+                $rowsToInsert[] = [
+                    'date' => $record->date,
+                    'quantity_in' => $record->quantity_in,
+                    'quantity_out' => $record->quantity_out,
+                    'inventory_id' => $record->inventory_id,
+                    'price_per_unit' => $record->price_per_unit,
+                    'warranty_period' => $record->warranty_period,
+                    'supplier_name' => $record->supplier_name,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            foreach (array_chunk($rowsToInsert, 500) as $chunk) {
+                DB::table('inventory_stocks')->insert($chunk);
+            }
+
+            DB::table('inventory_stock_reset_batches')
+                ->where('id', $batchId)
+                ->update([
+                    'restored_at' => $now,
+                    'restored_by' => auth()->id(),
+                    'updated_at' => $now,
+                ]);
+
+            // Rebuild current quantities from stock ledger after restore.
+            $totals = DB::table('inventory_stocks')
+                ->select('inventory_id', DB::raw('COALESCE(SUM(quantity_in),0) - COALESCE(SUM(quantity_out),0) as qty'))
+                ->groupBy('inventory_id')
+                ->pluck('qty', 'inventory_id');
+
+            Inventory::query()->update(['quantity' => 0]);
+            foreach ($totals as $inventoryId => $qty) {
+                DB::table('inventories')
+                    ->where('id', $inventoryId)
+                    ->update(['quantity' => $qty, 'updated_at' => $now]);
+            }
+        });
+
+        return redirect()
+            ->route('inventory.stock.history')
+            ->with('success', 'Stock records restored successfully from backup history.');
     }
 
     /**

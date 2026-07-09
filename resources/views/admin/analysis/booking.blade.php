@@ -56,6 +56,74 @@
         border-bottom: none;
     }
 
+    .analysis-filter-card {
+        border-top: 3px solid var(--main-color);
+    }
+
+    .analysis-filter-card .card-body {
+        background: linear-gradient(180deg, #fbfaff 0%, #ffffff 100%);
+        border-radius: 0 0 8px 8px;
+        padding: 14px 16px;
+    }
+
+    .analysis-filter-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .analysis-filter-field {
+        min-width: 210px;
+    }
+
+    .analysis-filter-label {
+        display: block;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #4b5563;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: 0.35rem;
+    }
+
+    .analysis-filter-control {
+        width: 100%;
+        height: 42px;
+        border: 1px solid #cfd4df;
+        border-radius: 8px;
+        font-weight: 500;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .analysis-filter-control:focus {
+        border-color: var(--main-color);
+        box-shadow: 0 0 0 0.2rem rgba(41, 22, 111, 0.15);
+    }
+
+    .analysis-filter-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .analysis-filter-btn {
+        min-width: 98px;
+        height: 42px;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .analysis-filter-hint {
+        margin-top: 8px;
+        font-size: 0.82rem;
+        color: #6b7280;
+    }
+
     .summary-card,
     .comparison-card {
         margin-top: 16px;
@@ -87,15 +155,37 @@
 </style>
 
 <div class="container-fluid">
-    <div class="d-flex  align-items-center mb-4">
-        <h3 class="fw-bold">Sales & Booking Analysis</h3>
-        <form method="GET" action="{{ route('admin.analysis.booking') }}" style="margin-left: 20px">
-            <select name="year" class="form-control" onchange="this.form.submit()">
-                @foreach(range(now()->year + 5, now()->year - 10) as $y)
-                    <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
-                @endforeach
-            </select>
-        </form>
+    <div class="d-flex align-items-center mb-3">
+        <h3 class="fw-bold mb-0">Sales & Booking Analysis</h3>
+    </div>
+
+    <div class="card analysis-filter-card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.analysis.booking') }}" class="analysis-filter-form">
+                <div class="analysis-filter-field">
+                    <label class="analysis-filter-label">Year</label>
+                    <select name="year" class="form-control analysis-filter-control">
+                        @foreach(range(now()->year + 5, now()->year - 10) as $y)
+                            <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="analysis-filter-label">Actions</label>
+                    <div class="analysis-filter-actions">
+                        <button type="submit" class="btn btn-primary analysis-filter-btn">
+                            <i class="fa fa-filter"></i> Apply
+                        </button>
+                        <a href="{{ route('admin.analysis.booking') }}" class="btn btn-outline-secondary analysis-filter-btn">
+                            <i class="fa fa-undo"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+            {{-- <div class="analysis-filter-hint">
+                Tip: select year and click Apply to refresh all charts and summary tables.
+            </div> --}}
+        </div>
     </div>
 
     <div class="row g-3">
