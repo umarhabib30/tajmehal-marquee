@@ -48,8 +48,22 @@
                     <tr>
                         <td>Absent Days ({{ $salary->absent_days }})</td>
                         <td class="text-right text-danger">-
-                            {{ number_format($salary->deduction_per_absent * $salary->absent_days, 2) }}</td>
+                            {{ number_format($salary->deduction_per_absent, 2) }}</td>
                     </tr>
+                    @if (($salary->adjustment_amount ?? 0) > 0)
+                        <tr>
+                            <td>
+                                {{ ($salary->adjustment_type ?? '') === 'bonus' ? 'Bonus' : 'Deduction' }}
+                                @if (!empty($salary->adjustment_note))
+                                    <br><small class="text-muted">{{ $salary->adjustment_note }}</small>
+                                @endif
+                            </td>
+                            <td class="text-right {{ ($salary->adjustment_type ?? '') === 'bonus' ? 'text-success' : 'text-danger' }}">
+                                {{ ($salary->adjustment_type ?? '') === 'bonus' ? '+' : '-' }}
+                                {{ number_format($salary->adjustment_amount, 2) }}
+                            </td>
+                        </tr>
+                    @endif
                     <tr class="table-success">
                         <th>Net Salary</th>
                         <th class="text-right">{{ number_format($salary->net_salary, 2) }}</th>

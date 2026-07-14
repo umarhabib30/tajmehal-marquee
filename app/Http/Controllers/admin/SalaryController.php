@@ -41,8 +41,17 @@ class SalaryController extends Controller
             // ✅ total deduction for month
             $total_deduction = $absent * $deduction_per_day;
 
+            $salary = Salary::where('staff_id', $staff->id)
+                ->where('month', $month)
+                ->where('year', $year)
+                ->first();
+
+            $adjustmentType = $salary->adjustment_type ?? null;
+            $adjustmentAmount = (float) ($salary->adjustment_amount ?? 0);
+            $adjustmentValue = $adjustmentType === 'bonus' ? $adjustmentAmount : -$adjustmentAmount;
+
             // net salary
-            $net_salary = $basic - $total_deduction;
+            $net_salary = $basic - $total_deduction + $adjustmentValue;
 
             // ✅ upsert salary record for month/year
             Salary::updateOrCreate(
@@ -142,6 +151,29 @@ class SalaryController extends Controller
         $active  = 'salary';
 
         return view('admin.salary.show', compact('salary', 'title', 'heading', 'active'));
+    }
+
+    public function adjustment(Request $request, Salary $salary)
+    {
+        $validated = $request->validate([
+            'adjustment_type' => 'required|in:bonus,deduction',
+            'adjustment_amount' => 'required|numeric|min:0',
+            'adjustment_note' => 'nullable|string|max:1000',
+        ]);
+
+        $amount = (float) $validated['adjustment_amount'];
+        $adjustmentValue = $validated['adjustment_type'] === 'bonus' ? $amount : -$amount;
+
+        $salary->update([
+            'adjustment_type' => $validated['adjustment_type'],
+            'adjustment_amount' => $amount,
+            'adjustment_note' => $validated['adjustment_note'] ?? null,
+            'net_salary' => (float) $salary->basic - (float) $salary->deduction_per_absent + $adjustmentValue,
+        ]);
+
+        return redirect()
+            ->route('admin.salary.index', ['month' => $salary->month, 'year' => $salary->year])
+            ->with('success', 'Salary adjustment saved successfully!');
     }
 
     // Delete salary record

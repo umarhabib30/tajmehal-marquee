@@ -15,6 +15,9 @@ class Salary extends Model
         'basic',
         'absent_days',
         'deduction_per_absent',
+        'adjustment_type',
+        'adjustment_amount',
+        'adjustment_note',
         'net_salary'
     ];
 

@@ -68,8 +68,8 @@
             color: #bd2130;
         }
 
-        .bookings-page .payment-cell small {
-            font-size: 0.72rem;
+        .bookings-page .amount-cell {
+            white-space: nowrap;
         }
 
         .bookings-page .status-badge {
@@ -114,11 +114,11 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Customer Name</th>
-                                    <th>Phone Number</th>
                                     <th>Event Type</th>
                                     <th>Hall</th>
                                     <th>Event Date</th>
-                                    <th>Pay Status</th>
+                                    <th>Total Amount</th>
+                                    <th>Pending Amount</th>
                                     <th>Status</th>
                                     <th class="action-col">Details</th>
                                     <th class="action-col">Print</th>
@@ -139,26 +139,18 @@
                             <tbody>
                                 @foreach ($bookings as $booking)
                                     @php
-                                        $paidAmount = $booking->payments->sum('amount');
                                         $totalAmount = $booking->total_amount;
-                                        $isPaid = $paidAmount >= $totalAmount;
-                                        $status = $isPaid ? 'Paid' : 'Pending';
+                                        $paidAmount = $booking->payments->sum('amount');
+                                        $pendingAmount = max($totalAmount - $paidAmount, 0);
                                     @endphp
                                     <tr>
                                         <td>{{ $booking->id }}</td>
                                         <td>{{ $booking->customer->name ?? 'N/A' }}</td>
-                                        <td>{{ $booking->customer->phone ?? 'N/A' }}</td>
                                         <td>{{ $booking->event_type }}</td>
                                         <td>{{ $booking->hall_name }}</td>
                                         <td>{{ \Carbon\Carbon::parse($booking->event_date)->format('d-M-Y') }}</td>
-                                        <td class="payment-cell">
-                                            <span class="badge status-badge {{ $isPaid ? 'badge-success' : 'badge-warning' }}">
-                                                {{ $status }}
-                                            </span>
-                                            <small class="text-muted d-block">
-                                                ₨{{ number_format($paidAmount, 0) }}/{{ number_format($totalAmount, 0) }}
-                                            </small>
-                                        </td>
+                                        <td class="amount-cell">Rs {{ number_format($totalAmount, 0) }}</td>
+                                        <td class="amount-cell">Rs {{ number_format($pendingAmount, 0) }}</td>
                                         <td>
                                             <span class="badge status-badge {{ $booking->statusBadgeClass() }}">
                                                 {{ $booking->status ?? 'Active' }}

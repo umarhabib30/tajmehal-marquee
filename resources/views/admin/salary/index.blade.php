@@ -172,12 +172,36 @@
         color: #3f4a62 !important;
         font-weight: 700;
         border-color: #e1e6f3;
+        white-space: normal;
+        line-height: 1.25;
     }
 
     .salary-page .table td {
         border-color: #e7ebf6;
         color: #374151;
         vertical-align: middle;
+        line-height: 1.25;
+    }
+
+    .salary-page .table-responsive {
+        overflow-x: hidden;
+    }
+
+    .salary-page .dataTables_wrapper {
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    .salary-page #salaryTable {
+        table-layout: fixed;
+        width: 100% !important;
+    }
+
+    .salary-page #salaryTable th,
+    .salary-page #salaryTable td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+        overflow-wrap: anywhere;
     }
 
     .salary-page .table tbody tr:hover {
@@ -187,6 +211,32 @@
     .salary-row-actions .btn {
         border-radius: 7px;
         font-weight: 600;
+        padding: 7px 9px;
+        white-space: normal;
+    }
+
+    .salary-row-actions .btn-adjustment {
+        background: var(--salary-primary);
+        border-color: var(--salary-primary);
+        color: #fff;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .salary-row-actions .btn-adjustment:hover,
+    .salary-row-actions .btn-adjustment:focus {
+        background: #241b66;
+        border-color: #241b66;
+        color: #fff;
+    }
+
+    .salary-row-actions .btn-adjustment i {
+        font-size: 0.95rem;
+        line-height: 1;
     }
 
     .salary-total-row th {
@@ -374,8 +424,10 @@
                                     <th>Basic</th>
                                     <th>Absent</th>
                                     <th>Deduction</th>
+                                    <th>Bonus</th>
                                     <th>Net Salary</th>
                                     <th class="no-print">Action</th>
+                                    <th class="no-print">Adjustment</th>
                                     <th class="no-print">Action</th>
                                 </tr>
                             </thead>
@@ -389,15 +441,28 @@
                                         <td>{{ number_format($s->basic, 2) }}</td>
                                         <td>{{ $s->absent_days }}</td>
 
-                                        {{-- ✅ Deduction is already TOTAL in DB --}}
-                                        <td>{{ number_format($s->deduction_per_absent, 2) }}</td>
-
+                                        <td>{{ ($s->adjustment_type ?? '') === 'deduction' ? number_format($s->adjustment_amount, 2) : '0.00' }}</td>
+                                        <td>{{ ($s->adjustment_type ?? '') === 'bonus' ? number_format($s->adjustment_amount, 2) : '0.00' }}</td>
+                                        
                                         <td><strong>{{ number_format($s->net_salary, 2) }}</strong></td>
 
                                         <td class="no-print salary-row-actions">
                                             <a href="{{ route('admin.salary.show', $s->id) }}" class="btn btn-info btn-sm">
                                                 Show
                                             </a>
+                                        </td>
+
+                                        <td class="no-print salary-row-actions">
+                                            <button type="button"
+                                                    class="btn btn-adjustment btn-sm salary-adjustment-btn"
+                                                    data-url="{{ route('admin.salary.adjustment', $s->id) }}"
+                                                    data-type="{{ $s->adjustment_type ?? 'deduction' }}"
+                                                    data-amount="{{ $s->adjustment_amount ?? 0 }}"
+                                                    data-note="{{ e($s->adjustment_note ?? '') }}"
+                                                    title="Salary adjustment"
+                                                    aria-label="Salary adjustment">
+                                                <i class="fa fa-sliders-h"></i>
+                                            </button>
                                         </td>
 
                                         <td class="no-print salary-row-actions">
@@ -411,7 +476,7 @@
 
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="text-center text-muted">
+                                        <td colspan="11" class="text-center text-muted">
                                             No salary records found for this month.
                                         </td>
                                     </tr>
@@ -420,10 +485,11 @@
 
                             <tfoot>
                                 <tr class="table-primary salary-total-row">
-                                    <th colspan="6" class="text-end">Total Salary Amount</th>
+                                    <th colspan="7" class="text-end">Total Salary Amount</th>
                                     <th>
                                         {{ number_format($salaries->sum('net_salary'), 2) }}
                                     </th>
+                                    <th class="no-print"></th>
                                     <th class="no-print"></th>
                                     <th class="no-print"></th>
                                 </tr>
@@ -453,6 +519,7 @@ $(document).ready(function() {
     // DataTable init
     const table = $('#salaryTable').DataTable({
         responsive: true,
+        autoWidth: false,
         paging: true,
         ordering: true,
         info: true,
@@ -478,6 +545,70 @@ $(document).ready(function() {
             if (result.isConfirmed) {
                 form.submit();
             }
+        });
+    });
+
+    $('.salary-adjustment-btn').on('click', function() {
+        const url = $(this).data('url');
+        const currentType = $(this).attr('data-type') || 'deduction';
+        const currentAmount = $(this).attr('data-amount') || 0;
+        const currentNote = $(this).attr('data-note') || '';
+
+        Swal.fire({
+            title: 'Salary Adjustment',
+            html: `
+                <div class="text-left">
+                    <label class="d-block mb-1 font-weight-bold">Adjustment Type</label>
+                    <select id="salaryAdjustmentType" class="form-control mb-3">
+                        <option value="deduction">Deduction</option>
+                        <option value="bonus">Bonus</option>
+                    </select>
+
+                    <label class="d-block mb-1 font-weight-bold">Amount</label>
+                    <input id="salaryAdjustmentAmount" type="number" min="0" step="0.01" class="form-control mb-3" placeholder="Enter amount">
+
+                    <label class="d-block mb-1 font-weight-bold">Note</label>
+                    <textarea id="salaryAdjustmentNote" class="form-control" rows="3" placeholder="Optional note"></textarea>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Save Adjustment',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#352a86',
+            didOpen: () => {
+                $('#salaryAdjustmentType').val(currentType);
+                $('#salaryAdjustmentAmount').val(currentAmount);
+                $('#salaryAdjustmentNote').val(currentNote);
+            },
+            preConfirm: () => {
+                const amount = $('#salaryAdjustmentAmount').val();
+
+                if (amount === '' || Number(amount) < 0) {
+                    Swal.showValidationMessage('Please enter a valid amount.');
+                    return false;
+                }
+
+                return {
+                    type: $('#salaryAdjustmentType').val(),
+                    amount,
+                    note: $('#salaryAdjustmentNote').val()
+                };
+            }
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            form.innerHTML = `
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="adjustment_type" value="${result.value.type}">
+                <input type="hidden" name="adjustment_amount" value="${result.value.amount}">
+                <input type="hidden" name="adjustment_note" value="">
+            `;
+            form.querySelector('input[name="adjustment_note"]').value = result.value.note;
+            document.body.appendChild(form);
+            form.submit();
         });
     });
 

@@ -124,6 +124,7 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
             Route::get('salary', [SalaryController::class, 'index'])->name('salary.index');
             Route::get('salary/create', [SalaryController::class, 'create'])->name('salary.create');
             Route::post('salary', [SalaryController::class, 'store'])->name('salary.store');
+            Route::post('salary/{salary}/adjustment', [SalaryController::class, 'adjustment'])->name('salary.adjustment');
             Route::get('salary/{salary}', [SalaryController::class, 'show'])->name('salary.show');
             Route::post('salary/{salary}/delete', [SalaryController::class, 'delete'])->name('salary.delete');
             Route::get('get-absent-days', [SalaryController::class, 'getAbsentDays'])->name('salary.getAbsentDays');
