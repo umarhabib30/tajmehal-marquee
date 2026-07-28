@@ -17,18 +17,22 @@ class AnalysisController extends Controller
         $year = (int) $request->input('year', now()->year);
         $previousYear = $year - 1;
 
+        // Paid/pending come from payment history, not booking status.
+        $paidFromPayments = '(SELECT COALESCE(SUM(p.amount), 0) FROM payments p WHERE p.booking_id = bookings.id)';
+
         $analysis = Booking::select(
             DB::raw('MONTH(event_date) as month'),
             DB::raw('COUNT(id) as total_bookings'),
             DB::raw('SUM(guests_count) as total_guests'),
             DB::raw('SUM(total_amount) as total_sales'),
-            DB::raw('SUM(total_amount - remaining_amount) as total_paid'),
-            DB::raw('SUM(remaining_amount) as total_pending')
+            DB::raw("SUM({$paidFromPayments}) as total_paid"),
+            DB::raw("SUM(GREATEST(total_amount - {$paidFromPayments}, 0)) as total_pending")
         )
             ->whereYear('event_date', $year)
             ->where(function ($query) {
-                $query->whereIn('status', [Booking::STATUS_ACTIVE, Booking::STATUS_DONE])
-                    ->orWhereNull('status');
+                // Include Pending/Active/Done; only Cancelled is excluded from analysis.
+                $query->whereNull('status')
+                    ->orWhere('status', '!=', Booking::STATUS_CANCELLED);
             })
             ->groupBy(DB::raw('MONTH(event_date)'))
             ->orderBy(DB::raw('MONTH(event_date)'))
@@ -42,8 +46,8 @@ class AnalysisController extends Controller
         )
             ->whereYear('event_date', $previousYear)
             ->where(function ($query) {
-                $query->whereIn('status', [Booking::STATUS_ACTIVE, Booking::STATUS_DONE])
-                    ->orWhereNull('status');
+                $query->whereNull('status')
+                    ->orWhere('status', '!=', Booking::STATUS_CANCELLED);
             })
             ->groupBy(DB::raw('MONTH(event_date)'))
             ->orderBy(DB::raw('MONTH(event_date)'))
