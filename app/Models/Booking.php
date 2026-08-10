@@ -77,7 +77,7 @@ class Booking extends Model
     public function scopeIncludedInAnalysis(Builder $query): Builder
     {
         return $query->where(function ($query) {
-            $query->whereIn('status', [self::STATUS_ACTIVE, self::STATUS_DONE])
+            $query->whereIn('status', [self::STATUS_PENDING, self::STATUS_ACTIVE, self::STATUS_DONE])
                 ->orWhereNull('status');
         });
     }

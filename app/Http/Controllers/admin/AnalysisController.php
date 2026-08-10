@@ -29,11 +29,7 @@ class AnalysisController extends Controller
             DB::raw("SUM(GREATEST(total_amount - {$paidFromPayments}, 0)) as total_pending")
         )
             ->whereYear('event_date', $year)
-            ->where(function ($query) {
-                // Include Pending/Active/Done; only Cancelled is excluded from analysis.
-                $query->whereNull('status')
-                    ->orWhere('status', '!=', Booking::STATUS_CANCELLED);
-            })
+            ->includedInAnalysis()
             ->groupBy(DB::raw('MONTH(event_date)'))
             ->orderBy(DB::raw('MONTH(event_date)'))
             ->get()
@@ -45,10 +41,7 @@ class AnalysisController extends Controller
             DB::raw('SUM(total_amount) as total_sales')
         )
             ->whereYear('event_date', $previousYear)
-            ->where(function ($query) {
-                $query->whereNull('status')
-                    ->orWhere('status', '!=', Booking::STATUS_CANCELLED);
-            })
+            ->includedInAnalysis()
             ->groupBy(DB::raw('MONTH(event_date)'))
             ->orderBy(DB::raw('MONTH(event_date)'))
             ->get()
