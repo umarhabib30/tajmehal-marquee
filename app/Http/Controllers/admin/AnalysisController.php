@@ -26,10 +26,7 @@ class AnalysisController extends Controller
             DB::raw('SUM(remaining_amount) as total_pending')
         )
             ->whereYear('event_date', $year)
-            ->where(function ($query) {
-                $query->whereIn('status', [Booking::STATUS_ACTIVE, Booking::STATUS_DONE])
-                    ->orWhereNull('status');
-            })
+            ->includedInAnalysis()
             ->groupBy(DB::raw('MONTH(event_date)'))
             ->orderBy(DB::raw('MONTH(event_date)'))
             ->get()
@@ -41,10 +38,7 @@ class AnalysisController extends Controller
             DB::raw('SUM(total_amount) as total_sales')
         )
             ->whereYear('event_date', $previousYear)
-            ->where(function ($query) {
-                $query->whereIn('status', [Booking::STATUS_ACTIVE, Booking::STATUS_DONE])
-                    ->orWhereNull('status');
-            })
+            ->includedInAnalysis()
             ->groupBy(DB::raw('MONTH(event_date)'))
             ->orderBy(DB::raw('MONTH(event_date)'))
             ->get()

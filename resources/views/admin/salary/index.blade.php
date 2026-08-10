@@ -529,7 +529,7 @@ $(document).ready(function() {
     });
 
     // Delete SweetAlert
-    $('.delete-salary-form').on('submit', function(e) {
+    $('#salaryTable').on('submit', '.delete-salary-form', function(e) {
         e.preventDefault();
         const form = this;
 
@@ -548,7 +548,7 @@ $(document).ready(function() {
         });
     });
 
-    $('.salary-adjustment-btn').on('click', function() {
+    $('#salaryTable').on('click', '.salary-adjustment-btn', function() {
         const url = $(this).data('url');
         const currentType = $(this).attr('data-type') || 'deduction';
         const currentAmount = $(this).attr('data-amount') || 0;

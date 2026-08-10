@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Booking;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,6 +22,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        View::composer('layouts.admin', function ($view) {
+            $user = auth()->user();
+            $quotations = collect();
+
+            if ($user && $user->hasModulePermission('booking', 'view')) {
+                $quotations = Booking::with('customer')
+                    ->where('status', Booking::STATUS_QUOTATION)
+                    ->orderBy('event_date')
+                    ->orderBy('id')
+                    ->get();
+            }
+
+            $view->with('quotationNotifications', $quotations);
+        });
+
         Blade::if('superAdmin', function () {
             return auth()->check() && auth()->user()->isSuperAdmin();
         });

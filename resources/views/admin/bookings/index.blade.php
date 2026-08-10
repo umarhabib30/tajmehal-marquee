@@ -83,6 +83,11 @@
             color: #fff;
         }
 
+        .bookings-page .status-badge.badge-info {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+
         .bookings-page .status-badge.badge-warning {
             background-color: #f3b600;
             color: #2e2f39;

@@ -151,6 +151,118 @@
             min-height: 44px;
         }
 
+        .dashboard-header .quotation-notification-nav {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+        }
+
+        .quotation-notification-toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .quotation-notification-toggle:hover,
+        .quotation-notification-toggle:focus {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.55);
+            outline: 0;
+        }
+
+        .quotation-notification-toggle.has-quotations .fa-bell {
+            color: #ffd23f;
+            transform-origin: top center;
+            animation: quotation-bell-blink 1.15s ease-in-out infinite;
+        }
+
+        .quotation-notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 21px;
+            height: 21px;
+            padding: 0 5px;
+            border: 2px solid #29166f;
+            border-radius: 999px;
+            background: #dc3545;
+            color: #fff;
+            font-size: 0.66rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        @keyframes quotation-bell-blink {
+            0%, 100% {
+                opacity: 1;
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                opacity: 0.3;
+                transform: rotate(12deg) scale(0.9);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .quotation-notification-toggle.has-quotations .fa-bell {
+                animation: none;
+            }
+        }
+
+        .quotation-notification-modal .modal-header {
+            background: linear-gradient(120deg, #332881 0%, #4b3eb6 100%);
+            color: #fff;
+            border-bottom: 0;
+        }
+
+        .quotation-notification-modal .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: #fff;
+        }
+
+        .quotation-notification-list {
+            max-height: 360px;
+            overflow-y: auto;
+        }
+
+        .quotation-notification-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #f2f0ff;
+            color: #352a86;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .quotation-notification-table td {
+            vertical-align: middle;
+        }
+
+        .quotation-notification-customer {
+            font-weight: 700;
+            color: #2f3547;
+        }
+
         .nav-user-dropdown .nav-user-info {
             background-color: #29166f;
             padding: 10px;
@@ -294,6 +406,17 @@
                 </button>
 
                 <ul class="navbar-nav navbar-right-top d-none d-lg-flex">
+                    <li class="nav-item quotation-notification-nav">
+                        <button type="button"
+                            class="quotation-notification-toggle {{ $quotationNotifications->isNotEmpty() ? 'has-quotations' : '' }}"
+                            data-toggle="modal" data-target="#quotationNotificationsModal"
+                            title="Quotation notifications" aria-label="Quotation notifications">
+                            <i class="fas fa-bell" aria-hidden="true"></i>
+                            @if ($quotationNotifications->isNotEmpty())
+                                <span class="quotation-notification-count">{{ $quotationNotifications->count() }}</span>
+                            @endif
+                        </button>
+                    </li>
                     <li class="nav-item dropdown nav-user">
                         <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -562,6 +685,65 @@
             <div class="dashboard-ecommerce">
                 <div class="container-fluid dashboard-content">
                     @yield('content')
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade quotation-notification-modal" id="quotationNotificationsModal" tabindex="-1"
+        role="dialog" aria-labelledby="quotationNotificationsTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="quotationNotificationsTitle">
+                        <i class="fas fa-bell" aria-hidden="true"></i>
+                        <span>Quotation Notifications</span>
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    @if ($quotationNotifications->isNotEmpty())
+                        <p class="text-muted mb-3">
+                            {{ $quotationNotifications->count() }}
+                            {{ \Illuminate\Support\Str::plural('quotation', $quotationNotifications->count()) }} awaiting follow-up.
+                        </p>
+                        <div class="table-responsive quotation-notification-list">
+                            <table class="table table-bordered table-hover quotation-notification-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Event</th>
+                                        <th>Date</th>
+                                        <th>Hall / Time</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($quotationNotifications as $quotation)
+                                        <tr>
+                                            <td class="quotation-notification-customer">
+                                                {{ $quotation->customer->name ?? 'N/A' }}
+                                            </td>
+                                            <td>{{ $quotation->event_type }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($quotation->event_date)->format('d-M-Y') }}</td>
+                                            <td>{{ $quotation->hall_name }} / {{ $quotation->time_slot }}</td>
+                                            <td class="text-center">
+                                                <a href="{{ route('admin.booking.show', $quotation->id) }}"
+                                                    class="btn btn-sm btn-primary">View</a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center text-muted py-4">
+                            <i class="far fa-bell-slash fa-2x mb-3 d-block"></i>
+                            No quotation notifications.
+                        </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

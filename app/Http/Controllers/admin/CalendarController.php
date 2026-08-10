@@ -28,7 +28,7 @@ class CalendarController extends Controller
      */
     public function events()
     {
-        $bookings = \App\Models\Booking::with(['customer', 'payments'])->get();
+        $bookings = Booking::with(['customer', 'payments'])->get();
 
         $events = $bookings->map(function ($booking) {
             $eventDate = $booking->event_date;

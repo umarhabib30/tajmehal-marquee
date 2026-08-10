@@ -302,13 +302,12 @@
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Booking status</label>
                         <select name="status" class="form-control">
-                            <option value="Pending" {{ old('status') === 'Pending' ? 'selected' : '' }}>Pending
-                            </option>
-                            <option value="Active" {{ old('status', 'Active') === 'Active' ? 'selected' : '' }}>Active
-                            </option>
-                            <option value="Done" {{ old('status') === 'Done' ? 'selected' : '' }}>Done</option>
-                            <option value="Cancelled" {{ old('status') === 'Cancelled' ? 'selected' : '' }}>Cancelled
-                            </option>
+                            @foreach (\App\Models\Booking::allowedStatuses() as $st)
+                                <option value="{{ $st }}"
+                                    {{ old('status', \App\Models\Booking::STATUS_ACTIVE) === $st ? 'selected' : '' }}>
+                                    {{ $st }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
 

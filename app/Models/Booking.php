@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
     use HasFactory;
+
+    public const STATUS_QUOTATION = 'Quotation';
 
     public const STATUS_PENDING = 'Pending';
 
@@ -21,6 +24,7 @@ class Booking extends Model
     public static function allowedStatuses(): array
     {
         return [
+            self::STATUS_QUOTATION,
             self::STATUS_PENDING,
             self::STATUS_ACTIVE,
             self::STATUS_DONE,
@@ -33,11 +37,13 @@ class Booking extends Model
         $raw = trim((string) $status);
 
         return match ($raw) {
+            self::STATUS_QUOTATION => '#17a2b8',
             self::STATUS_PENDING => '#ffc107',
             self::STATUS_ACTIVE => '#6c757d',
             self::STATUS_DONE => '#28a745',
             self::STATUS_CANCELLED => '#dc3545',
             default => match (strtolower($raw)) {
+                'quotation' => '#17a2b8',
                 'pending' => '#ffc107',
                 'completed' => '#28a745',
                 'cancelled', 'canceled' => '#dc3545',
@@ -52,11 +58,13 @@ class Booking extends Model
         $raw = trim((string) $this->status);
 
         return match ($raw) {
+            self::STATUS_QUOTATION => 'badge-info',
             self::STATUS_PENDING => 'badge-warning',
             self::STATUS_ACTIVE => 'badge-secondary',
             self::STATUS_DONE => 'badge-success',
             self::STATUS_CANCELLED => 'badge-danger',
             default => match (strtolower($raw)) {
+                'quotation' => 'badge-info',
                 'pending' => 'badge-warning',
                 'completed' => 'badge-success',
                 'cancelled', 'canceled' => 'badge-danger',
@@ -64,6 +72,14 @@ class Booking extends Model
                 default => 'badge-secondary',
             },
         };
+    }
+
+    public function scopeIncludedInAnalysis(Builder $query): Builder
+    {
+        return $query->where(function ($query) {
+            $query->whereIn('status', [self::STATUS_ACTIVE, self::STATUS_DONE])
+                ->orWhereNull('status');
+        });
     }
 
     protected $fillable = [

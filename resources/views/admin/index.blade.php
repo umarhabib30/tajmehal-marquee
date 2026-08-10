@@ -133,6 +133,7 @@
             color: var(--ui-muted);
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             flex-wrap: wrap;
             gap: 8px;
         }
@@ -147,16 +148,24 @@
         }
 
         .booking-status-legend > span {
+            display: inline-flex;
+            align-items: center;
             border: 1px solid #e2e7f3;
             background: #fff;
             border-radius: 999px;
             padding: 4px 10px;
             font-size: 0.78rem;
             font-weight: 600;
+            margin: 0 !important;
+            white-space: nowrap;
         }
 
         .legend-active {
             background: #6c757d;
+        }
+
+        .legend-quotation {
+            background: #17a2b8;
         }
 
         .legend-pending {
@@ -273,6 +282,38 @@
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        .dashboard-action-field {
+            min-width: auto;
+        }
+
+        @media (max-width: 1199.98px) {
+            .booking-status-legend {
+                width: 100%;
+                justify-content: flex-start;
+                padding-top: 12px;
+                border-top: 1px solid var(--ui-border);
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .dashboard-filter-controls,
+            .filter-field,
+            .dashboard-action-field {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .dashboard-filter-select {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .dashboard-filter-actions .dashboard-filter-btn {
+                flex: 1 1 0;
+                min-width: 0;
+            }
         }
 
         .booking-modal .modal-content {
@@ -421,7 +462,7 @@
                             </select>
                         </div>
 
-                        <div class="filter-field" style="min-width: auto;">
+                        <div class="filter-field dashboard-action-field">
                             <label class="filter-label">Actions</label>
                             <div class="dashboard-filter-actions">
                                 <button id="goToDateBtn" class="btn btn-primary dashboard-filter-btn">
@@ -435,9 +476,10 @@
                     </div>
 
                     <div class="booking-status-legend text-muted">
-                        <span class="me-3"><span class="legend-swatch legend-active"></span>Active</span>
-                        <span class="me-3"><span class="legend-swatch legend-pending"></span>Pending</span>
-                        <span class="me-3"><span class="legend-swatch legend-done"></span>Done</span>
+                        <span><span class="legend-swatch legend-quotation"></span>Quotation</span>
+                        <span><span class="legend-swatch legend-active"></span>Active</span>
+                        <span><span class="legend-swatch legend-pending"></span>Pending</span>
+                        <span><span class="legend-swatch legend-done"></span>Done</span>
                         <span><span class="legend-swatch legend-cancelled"></span>Cancelled</span>
                     </div>
                 </div>
