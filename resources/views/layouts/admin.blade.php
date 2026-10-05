@@ -429,6 +429,9 @@
                             <div class="nav-user-info">
                                 <h5 class="mb-0 nav-user-name">{{ auth()->user()->name ?? 'User' }}</h5>
                             </div>
+                            <a href="{{ route('admin.settings.index') }}" class="dropdown-item text-dark">
+                                <i class="fa fa-cog mr-2 text-dark"></i> Settings
+                            </a>
                             <a href="{{ route('logout') }}"
                                 onclick="event.preventDefault();document.getElementById('logout-form').submit();"
                                 class="dropdown-item text-dark">
@@ -663,6 +666,13 @@
                                     </div>
                                 </li>
                             @endmoduleNav
+
+                            <li class="nav-item">
+                                <a class="nav-link @if (($active ?? '') == 'settings') active @endif"
+                                    href="{{ route('admin.settings.index') }}">
+                                    <i class="fa fa-fw fa-cog"></i> Settings
+                                </a>
+                            </li>
 
                             <li class="nav-item d-lg-none">
                                 <a href="{{ route('logout') }}"
