@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\AdminSettingsController;
 use App\Http\Controllers\admin\AnalysisController;
 use App\Http\Controllers\admin\AttendenceController;
 use App\Http\Controllers\admin\BookingController;
@@ -38,6 +39,11 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
         Route::put('/{user}', [UserManagementController::class, 'update'])->name('update');
         Route::post('/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('reset-password');
         Route::delete('/{user}', [UserManagementController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('admin/settings')->name('admin.settings.')->group(function () {
+        Route::get('/', [AdminSettingsController::class, 'index'])->name('index');
+        Route::put('/password', [AdminSettingsController::class, 'updatePassword'])->name('password.update');
     });
 
     Route::middleware(['admin_route_perm'])->group(function () {
