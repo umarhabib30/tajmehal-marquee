@@ -100,6 +100,7 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
             Route::get('booking/show/{id}', [BookingController::class, 'show'])->name('booking.show');
             Route::get('booking/edit/{id}', [BookingController::class, 'edit'])->name('booking.edit');
             Route::post('booking/update', [BookingController::class, 'update'])->name('booking.update');
+            Route::patch('booking/{id}/status', [BookingController::class, 'updateStatus'])->name('booking.updateStatus');
 
             Route::get('booking/customer/{id}', [BookingController::class, 'getCustomer'])->name('booking.getCustomer');
             Route::get('booking/package-dishes/{id}', [BookingController::class, 'getPackageDishes'])->name('booking.getPackageDishes');

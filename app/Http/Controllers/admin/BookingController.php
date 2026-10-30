@@ -10,6 +10,8 @@ use App\Models\DishPackage;
 use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class BookingController extends Controller
@@ -17,9 +19,21 @@ class BookingController extends Controller
     // Index page
     public function index(Request $request)
     {
-        $bookings = Booking::with('customer')
-            ->orderByDesc('id')
-            ->get();
+        $filters = $request->validate([
+            'month' => ['nullable', 'date_format:Y-m'],
+            'day' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
+        $query = Booking::with('customer');
+        if (!empty($filters['day'])) {
+            $query->whereDate('event_date', $filters['day']);
+        } elseif (!empty($filters['month'])) {
+            $start = Carbon::createFromFormat('!Y-m', $filters['month']);
+            $query->where('event_date', '>=', $start->toDateString())
+                ->where('event_date', '<', $start->copy()->addMonth()->toDateString());
+        }
+
+        $bookings = $query->orderByDesc('id')->get();
 
         $data = [
             'bookings' => $bookings,
@@ -144,6 +158,40 @@ class BookingController extends Controller
             'title' => 'Booking Details',
             'dishes' => $dishes,
         ]);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => ['required', Rule::in(Booking::allowedStatuses())],
+        ]);
+
+        DB::transaction(function () use ($request, $id, $validated) {
+            $booking = Booking::lockForUpdate()->findOrFail($id);
+
+            if ($validated['status'] === Booking::STATUS_CANCELLED && $booking->status !== Booking::STATUS_CANCELLED) {
+                $availableRefund = max(0, (int) $booking->payments()->sum('amount'));
+                $refund = Validator::make($request->only('refund_amount'), [
+                    'refund_amount' => ['required', 'integer', 'min:0', 'max:'.$availableRefund],
+                ], [
+                    'refund_amount.max' => 'The refund cannot exceed the amount paid and not yet refunded.',
+                ])->validate();
+
+                if ($refund['refund_amount'] > 0) {
+                    $booking->payments()->create([
+                        'amount' => -$refund['refund_amount'],
+                        'payment_date' => Carbon::today(),
+                        'payment_method' => 'Cancellation refund',
+                    ]);
+                    $booking->remaining_amount += $refund['refund_amount'];
+                }
+            }
+
+            $booking->fill($validated)->save();
+        });
+
+        return redirect()->route('admin.booking.show', $id)
+            ->with('success', 'Booking status updated successfully.');
     }
 
     // Edit booking form

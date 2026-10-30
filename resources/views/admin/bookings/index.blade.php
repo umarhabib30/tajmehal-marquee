@@ -113,6 +113,31 @@
                     <h3 class="fw-bold">{{ $heading }}</h3>
                 </div>
                 <div class="card-body">
+                    <form action="{{ route('admin.booking.index') }}" method="GET" class="mb-4">
+                        <div class="row align-items-end">
+                            <div class="col-md-4 mb-2">
+                                <label for="filter-month">Event Month</label>
+                                <input type="month" id="filter-month" name="month" value="{{ request('month') }}"
+                                    class="form-control @error('month') is-invalid @enderror">
+                                @error('month')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label for="filter-day">Event Day</label>
+                                <input type="date" id="filter-day" name="day" value="{{ request('day') }}"
+                                    class="form-control @error('day') is-invalid @enderror">
+                                @error('day')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <button type="submit" class="btn btn-primary">Filter Bookings</button>
+                                <a href="{{ route('admin.booking.index') }}" class="btn btn-outline-secondary">Reset</a>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Filter by the event month or an exact event day. If both are selected, the day takes priority.</small>
+                    </form>
                     <div class="table-responsive">
                         <table id="bookingTable" class="table table-striped table-bordered">
                             <thead>
