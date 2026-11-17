@@ -98,13 +98,19 @@
                             @method('PATCH')
                             <input type="hidden" name="status" value="Cancelled">
                             <input type="hidden" name="record_refund" value="1">
-                            @php($availableRefund = max(0, (int) $booking->payments->sum('amount')))
+                            @php
+                                $availableRefund = max(0, (int) $booking->payments->sum('amount'));
+                            @endphp
                             <p>Amount paid and not yet refunded: <strong>Rs {{ number_format($availableRefund) }}</strong></p>
                             <label for="additional-refund">Additional refund returned now (Rs)</label>
                             <input id="additional-refund" type="number" name="refund_amount" min="1" max="{{ $availableRefund }}"
                                 step="1" value="{{ old('refund_amount') }}" class="form-control" required>
-                            @error('refund_amount')<div class="text-danger">{{ $message }}</div>@enderror
-                            <button type="submit" class="btn btn-danger mt-2" @disabled($availableRefund <= 0)>Record Additional Refund</button>
+                            @error('refund_amount')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
+                            <button type="submit" class="btn btn-danger mt-2" {{ $availableRefund <= 0 ? 'disabled' : '' }}>
+                                Record Additional Refund
+                            </button>
                         </form>
                     @endif
                 @endmodulePerm
