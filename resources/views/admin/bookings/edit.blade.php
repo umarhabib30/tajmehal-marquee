@@ -251,12 +251,22 @@
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Status</label>
-                        <select name="status" class="form-control">
+                        <select name="status" id="booking-status" class="form-control">
                             @foreach (\App\Models\Booking::allowedStatuses() as $st)
                                 <option value="{{ $st }}"
                                     {{ old('status', $booking->status) == $st ? 'selected' : '' }}>{{ $st }}</option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div class="col-md-6" id="cancellation-refund" hidden>
+                        @php($availableRefund = max(0, (int) $booking->payments()->sum('amount')))
+                        <label for="refund-amount">Refund to return now (Rs)</label>
+                        <p>Amount paid and not yet refunded: Rs {{ number_format($availableRefund) }}</p>
+                        <input type="number" id="refund-amount" name="refund_amount" min="0"
+                            max="{{ $availableRefund }}" step="1" value="{{ old('refund_amount', 0) }}" class="form-control">
+                        <small>Enter 0 to cancel without a refund, or enter the amount returned now. Further refunds can be recorded later.</small>
+                        @error('refund_amount')<div class="text-danger">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-12 text-end">
@@ -273,6 +283,17 @@
 
 @section('script')
     <script>
+        const statusSelect = document.getElementById('booking-status');
+        const refundSection = document.getElementById('cancellation-refund');
+        const refundAmount = document.getElementById('refund-amount');
+        function toggleRefund() {
+            const cancelled = statusSelect.value === @json(\App\Models\Booking::STATUS_CANCELLED);
+            refundSection.hidden = !cancelled;
+            refundAmount.disabled = !cancelled;
+            refundAmount.required = cancelled;
+        }
+        statusSelect.addEventListener('change', toggleRefund);
+        toggleRefund();
         // ===================== Auto-fill customer details =====================
         document.getElementById('customer_id').addEventListener('change', function() {
             const selected = this.options[this.selectedIndex];

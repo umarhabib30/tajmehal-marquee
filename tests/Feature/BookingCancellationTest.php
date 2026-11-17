@@ -19,6 +19,14 @@ class BookingCancellationTest extends TestCase
             $table->id();
             $table->string('status');
             $table->integer('remaining_amount');
+            $table->integer('total_amount')->default(10000);
+            $table->integer('customer_id')->nullable();
+            foreach (['event_type', 'hall_name', 'event_date', 'time_slot', 'start_time', 'end_time', 'dishes', 'decorations'] as $field) {
+                $table->string($field)->nullable();
+            }
+            foreach (['guests_count', 'per_head_price', 'decore_price', 'tax_amount', 'discount', 'advance_payment'] as $field) {
+                $table->integer($field)->default(0);
+            }
             $table->timestamps();
         });
         Schema::create('payments', function (Blueprint $table) {
@@ -29,6 +37,10 @@ class BookingCancellationTest extends TestCase
             $table->string('payment_method')->nullable();
             $table->timestamps();
         });
+        Schema::create('customers', function (Blueprint $table) {
+            $table->id();
+        });
+        DB::table('customers')->insert(['id' => 1]);
         $this->withoutMiddleware();
     }
 
@@ -84,5 +96,45 @@ class BookingCancellationTest extends TestCase
         $this->patch($url, ['status' => 'Cancelled', 'refund_amount' => 0])->assertSessionHasNoErrors();
         $this->assertSame('Cancelled', $booking->fresh()->status);
         $this->assertSame(2, $booking->payments()->count());
+    }
+
+    public function test_cancelled_booking_releases_slot_and_refunds_can_be_returned_later(): void
+    {
+        $booking = $this->paidBooking();
+        $url = route('admin.booking.updateStatus', $booking->id);
+        $this->assertTrue(Booking::occupiesSlot()->whereKey($booking->id)->exists());
+        $this->patch($url, ['status' => 'Cancelled', 'refund_amount' => 1500])->assertSessionHasNoErrors();
+        $this->assertFalse(Booking::occupiesSlot()->whereKey($booking->id)->exists());
+        $this->patch($url, ['status' => 'Cancelled', 'record_refund' => 1, 'refund_amount' => 1000])
+            ->assertSessionHasNoErrors();
+        $this->assertEquals(2500, $booking->payments()->sum('amount'));
+        $this->patch($url, ['status' => 'Cancelled', 'record_refund' => 1, 'refund_amount' => 2501])
+            ->assertSessionHasErrors('refund_amount');
+        $this->assertEquals(2500, $booking->payments()->sum('amount'));
+        session()->forget('errors');
+        $this->patch($url, ['status' => 'Cancelled', 'record_refund' => 1, 'refund_amount' => 2500])
+            ->assertSessionHasNoErrors();
+        $this->assertEquals(0, $booking->payments()->sum('amount'));
+        $this->assertEquals(10000, $booking->fresh()->remaining_amount);
+    }
+
+    public function test_edit_cancellation_records_refund_even_when_another_booking_uses_the_slot(): void
+    {
+        $booking = $this->paidBooking();
+        $payload = [
+            'id' => $booking->id, 'customer_id' => 1, 'event_type' => 'Barat',
+            'hall_name' => 'Hall 1', 'event_date' => '2026-10-30', 'time_slot' => 'Lunch',
+            'start_time' => '13:00', 'end_time' => '16:00', 'guests_count' => 10,
+            'per_head_price' => 1000, 'total_amount' => 10000, 'remaining_amount' => 5000,
+            'status' => 'Cancelled', 'refund_amount' => 1500,
+        ];
+        Booking::create(array_merge($payload, ['status' => 'Active']));
+        $this->post(route('admin.booking.update'), $payload)->assertSessionHasNoErrors();
+        $this->assertSame('Cancelled', $booking->fresh()->status);
+        $this->assertEquals(3500, $booking->payments()->sum('amount'));
+        $this->assertEquals(6500, $booking->fresh()->remaining_amount);
+        $payload['refund_amount'] = 3501;
+        $this->post(route('admin.booking.update'), $payload)->assertSessionHasErrors('refund_amount');
+        $this->assertEquals(3500, $booking->payments()->sum('amount'));
     }
 }

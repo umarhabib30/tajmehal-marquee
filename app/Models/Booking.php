@@ -82,6 +82,13 @@ class Booking extends Model
         });
     }
 
+    public function scopeOccupiesSlot(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query) {
+            $query->whereNull('status')->orWhereRaw("LOWER(TRIM(status)) NOT IN ('cancelled', 'canceled')");
+        });
+    }
+
     protected $fillable = [
         'customer_id',
         'customer_phone',

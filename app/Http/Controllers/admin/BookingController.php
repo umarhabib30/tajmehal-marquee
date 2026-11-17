@@ -107,12 +107,12 @@ class BookingController extends Controller
         $validated['status'] = $request->status ?? Booking::STATUS_ACTIVE;
 
         // ✅ DUPLICATE CHECK
-        $duplicate = Booking::whereDate('event_date', $request->event_date)
+        $duplicate = Booking::occupiesSlot()->whereDate('event_date', $request->event_date)
             ->where('hall_name', $request->hall_name)
             ->where('time_slot', $request->time_slot)
             ->first();
 
-        if ($duplicate) {
+        if ($duplicate && $validated['status'] !== Booking::STATUS_CANCELLED) {
             return redirect()
                 ->back()
                 ->withInput()
@@ -169,22 +169,19 @@ class BookingController extends Controller
         DB::transaction(function () use ($request, $id, $validated) {
             $booking = Booking::lockForUpdate()->findOrFail($id);
 
-            if ($validated['status'] === Booking::STATUS_CANCELLED && $booking->status !== Booking::STATUS_CANCELLED) {
-                $availableRefund = max(0, (int) $booking->payments()->sum('amount'));
-                $refund = Validator::make($request->only('refund_amount'), [
-                    'refund_amount' => ['required', 'integer', 'min:0', 'max:'.$availableRefund],
-                ], [
-                    'refund_amount.max' => 'The refund cannot exceed the amount paid and not yet refunded.',
-                ])->validate();
-
-                if ($refund['refund_amount'] > 0) {
-                    $booking->payments()->create([
-                        'amount' => -$refund['refund_amount'],
-                        'payment_date' => Carbon::today(),
-                        'payment_method' => 'Cancellation refund',
+            if ($validated['status'] !== Booking::STATUS_CANCELLED && $booking->status === Booking::STATUS_CANCELLED) {
+                $conflict = Booking::occupiesSlot()->whereDate('event_date', $booking->event_date)
+                    ->where('hall_name', $booking->hall_name)->where('time_slot', $booking->time_slot)
+                    ->whereKeyNot($booking->id)->exists();
+                if ($conflict) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'status' => 'This hall is already booked for this date and time slot.',
                     ]);
-                    $booking->remaining_amount += $refund['refund_amount'];
                 }
+            }
+            if ($validated['status'] === Booking::STATUS_CANCELLED &&
+                ($booking->status !== Booking::STATUS_CANCELLED || $request->boolean('record_refund'))) {
+                $this->recordCancellationRefund($request, $booking);
             }
 
             $booking->fill($validated)->save();
@@ -192,6 +189,25 @@ class BookingController extends Controller
 
         return redirect()->route('admin.booking.show', $id)
             ->with('success', 'Booking status updated successfully.');
+    }
+
+    private function recordCancellationRefund(Request $request, Booking $booking): void
+    {
+        $availableRefund = max(0, (int) $booking->payments()->sum('amount'));
+        $refund = Validator::make($request->only('refund_amount'), [
+            'refund_amount' => ['required', 'integer', 'min:0', 'max:'.$availableRefund],
+        ], [
+            'refund_amount.max' => 'The refund cannot exceed the amount paid and not yet refunded.',
+        ])->validate();
+
+        if ($refund['refund_amount'] > 0) {
+            $booking->payments()->create([
+                'amount' => -$refund['refund_amount'],
+                'payment_date' => Carbon::today(),
+                'payment_method' => 'Cancellation refund',
+            ]);
+            $booking->remaining_amount += $refund['refund_amount'];
+        }
     }
 
     // Edit booking form
@@ -255,13 +271,13 @@ class BookingController extends Controller
         ]);
 
         // ✅ Duplicate validation (same hall + same date + same time slot not allowed)
-        $duplicate = Booking::whereDate('event_date', $request->event_date)
+        $duplicate = Booking::occupiesSlot()->whereDate('event_date', $request->event_date)
             ->where('hall_name', $request->hall_name)
             ->where('time_slot', $request->time_slot)
             ->where('id', '!=', $request->id) // ✅ ignore current record
             ->first();
 
-        if ($duplicate) {
+        if ($duplicate && $validated['status'] !== Booking::STATUS_CANCELLED) {
             return redirect()
                 ->back()
                 ->withInput()
@@ -279,8 +295,15 @@ class BookingController extends Controller
         $validated['discount'] = $request->discount ?? 0;
         $validated['advance_payment'] = $request->advance_payment ?? 0;
 
-        $booking = Booking::findOrFail($request->id);
-        $booking->update($validated);
+        DB::transaction(function () use ($request, $validated) {
+            $booking = Booking::lockForUpdate()->findOrFail($request->id);
+            $booking->fill($validated);
+            if ($validated['status'] === Booking::STATUS_CANCELLED) {
+                $booking->remaining_amount = max(0, $booking->total_amount - $booking->payments()->sum('amount'));
+                $this->recordCancellationRefund($request, $booking);
+            }
+            $booking->save();
+        });
 
         return redirect()->route('admin.booking.index')->with('success', 'Booking updated successfully');
     }

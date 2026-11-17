@@ -89,7 +89,7 @@
                             @foreach ($customers as $cust)
                                 <option value="{{ $cust->id }}" data-phone="{{ $cust->phone }}"
                                     data-idcard="{{ $cust->idcardnumber }}" data-address="{{ $cust->address }}"
-                                    @if (!empty($customer) && $customer->id == $cust->id) selected @endif>
+                                    @selected(old('customer_id', $customer?->id) == $cust->id)>
                                     {{ $cust->name }} ({{ $cust->phone }})
                                 </option>
                             @endforeach
@@ -98,19 +98,19 @@
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Phone</label>
                         <input type="text" name="customer_phone" readonly class="form-control"
-                            value="{{ $customer?->phone ?? '' }}">
+                            value="{{ old('customer_phone', $customer?->phone ?? '') }}">
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label fw-bold">ID-Card #</label>
                         <input type="text" name="customer_idcard" readonly class="form-control"
-                            value="{{ $customer?->idcardnumber ?? '' }}">
+                            value="{{ old('customer_idcard', $customer?->idcardnumber ?? '') }}">
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Address</label>
                         <input type="text" name="customer_address" readonly class="form-control"
-                            value="{{ $customer?->address ?? '' }}">
+                            value="{{ old('customer_address', $customer?->address ?? '') }}">
                     </div>
 
 
@@ -120,7 +120,7 @@
                         <select name="package_id" id="package_id" class="form-control">
                             <option value="">Select Package</option>
                             @foreach ($dishPackages as $pkg)
-                                <option value="{{ $pkg->id }}">{{ $pkg->name }}</option>
+                                <option value="{{ $pkg->id }}" @selected(old('package_id') == $pkg->id)>{{ $pkg->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -141,7 +141,7 @@
                         <div id="package_dishes_box" class="p-3 border rounded bg-light">
                             <div class="text-muted">Select a package to view its dishes...</div>
                         </div>
-                        <input type="hidden" name="dishes" id="dishes_input">
+                        <input type="hidden" name="dishes" id="dishes_input" value="{{ old('dishes') }}">
                     </div>
 
                     {{-- Event Type --}}
@@ -149,11 +149,11 @@
                         <label class="form-label fw-bold">Event Type</label>
                         <select name="event_type" class="form-control">
                             <option value="">Select Event Type</option>
-                            <option value="Barat">Barat</option>
-                            <option value="Walime">Walime</option>
-                            <option value="Mehndi">Mehndi</option>
-                            <option value="Meeting">Meeting</option>
-                            <option value="Get Together">Get Together</option>
+                            <option value="Barat" @selected(old('event_type') === 'Barat')>Barat</option>
+                            <option value="Walime" @selected(old('event_type') === 'Walime')>Walime</option>
+                            <option value="Mehndi" @selected(old('event_type') === 'Mehndi')>Mehndi</option>
+                            <option value="Meeting" @selected(old('event_type') === 'Meeting')>Meeting</option>
+                            <option value="Get Together" @selected(old('event_type') === 'Get Together')>Get Together</option>
                         </select>
                     </div>
 
@@ -162,17 +162,17 @@
                         <label class="form-label fw-bold">Select Hall</label>
                         <select name="hall_name" class="form-control">
                             <option value="">Select Hall</option>
-                            <option value="Hall 1">Hall 1</option>
-                            <option value="Hall 2">Hall 2</option>
-                            <option value="Hall 3">Hall 3</option>
-                            <option value="Full Hall">Full Hall</option>
+                            <option value="Hall 1" @selected(old('hall_name') === 'Hall 1')>Hall 1</option>
+                            <option value="Hall 2" @selected(old('hall_name') === 'Hall 2')>Hall 2</option>
+                            <option value="Hall 3" @selected(old('hall_name') === 'Hall 3')>Hall 3</option>
+                            <option value="Full Hall" @selected(old('hall_name') === 'Full Hall')>Full Hall</option>
                         </select>
                     </div>
 
                     {{-- Event Date --}}
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Event Date</label>
-                        <input type="date" name="event_date" class="form-control">
+                        <input type="date" name="event_date" class="form-control" value="{{ old('event_date') }}">
                     </div>
 
                     {{-- Time Slot --}}
@@ -180,40 +180,40 @@
                         <label class="form-label fw-bold">Time Slot</label>
                         <select name="time_slot" id="time_slot" class="form-control">
                             <option value="">Select Time Slot</option>
-                            <option value="Lunch">Lunch (01:00 PM - 04:00 PM)</option>
-                            <option value="Dinner">Dinner (07:00 PM - 10:00 PM)</option>
+                            <option value="Lunch" @selected(old('time_slot') === 'Lunch')>Lunch (01:00 PM - 04:00 PM)</option>
+                            <option value="Dinner" @selected(old('time_slot') === 'Dinner')>Dinner (07:00 PM - 10:00 PM)</option>
                         </select>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Start Time</label>
-                        <input type="time" name="start_time" id="start_time" class="form-control">
+                        <input type="time" name="start_time" id="start_time" class="form-control" value="{{ old('start_time') }}">
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold">End Time</label>
-                        <input type="time" name="end_time" id="end_time" class="form-control">
+                        <input type="time" name="end_time" id="end_time" class="form-control" value="{{ old('end_time') }}">
                     </div>
 
                     {{-- Guests --}}
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Guests Count</label>
                         <input type="number" name="guests_count" id="guests_count" class="form-control"
-                            min="1">
+                            min="1" value="{{ old('guests_count') }}">
                     </div>
 
                     {{-- Per Head --}}
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Per Head Price (₨)</label>
                         <input type="number" name="per_head_price" id="per_head_price" class="form-control"
-                            min="0">
+                            min="0" value="{{ old('per_head_price') }}">
                     </div>
 
                     {{-- Advance --}}
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Advance Payment (₨)</label>
                         <input type="number" name="advance_payment" id="advance_payment" class="form-control"
-                            min="0">
+                            min="0" value="{{ old('advance_payment') }}">
                     </div>
 
                     {{-- Decorations --}}
@@ -225,7 +225,7 @@
                         @foreach ($decorations as $dec)
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="decorations[]"
-                                    value="{{ $dec }}">
+                                    value="{{ $dec }}" @checked(in_array($dec, (array) old('decorations', [])))>
                                 <label class="form-check-label">{{ $dec }}</label>
                             </div>
                         @endforeach
@@ -233,20 +233,20 @@
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Decore Price</label>
-                        <input type="number" name="decore_price" class="form-control" min="0">
+                        <input type="number" name="decore_price" class="form-control" min="0" value="{{ old('decore_price') }}">
                     </div>
 
                     {{-- Total Amount --}}
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Total Amount (₨)</label>
                         <input type="text" id="total_amount" name="total_amount" class="form-control bg-light"
-                            readonly>
+                            readonly value="{{ old('total_amount') }}">
                     </div>
 
                     {{-- Tax --}}
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Tax Amount (₨)</label>
-                        <input type="number" name="tax_amount" id="tax_percent" class="form-control" min="0">
+                        <input type="number" name="tax_amount" id="tax_percent" class="form-control" min="0" value="{{ old('tax_amount') }}">
                     </div>
 
                     {{-- Payment --}}
@@ -254,8 +254,8 @@
                         <label class="form-label fw-bold">Payment Method</label>
                         <select name="payment_method" class="form-control">
                             <option value="">Select Payment Method</option>
-                            <option value="Cash">Cash</option>
-                            <option value="Online Payment">Online Payment</option>
+                            <option value="Cash" @selected(old('payment_method') === 'Cash')>Cash</option>
+                            <option value="Online Payment" @selected(old('payment_method') === 'Online Payment')>Online Payment</option>
                         </select>
                     </div>
 
@@ -263,14 +263,14 @@
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Remaining Amount (₨)</label>
                         <input type="text" id="remaining_amount" name="remaining_amount"
-                            class="form-control bg-light" readonly>
+                            class="form-control bg-light" readonly value="{{ old('remaining_amount') }}">
                     </div>
 
                     {{-- Signatures --}}
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Customer Signature</label>
                         <canvas id="customerPad" class="border w-100 rounded bg-white" height="130"></canvas>
-                        <input type="hidden" name="customer_signature" id="customer_signature">
+                        <input type="hidden" name="customer_signature" id="customer_signature" value="{{ old('customer_signature') }}">
                         <button type="button" class="btn btn-outline-secondary btn-sm mt-2"
                             onclick="clearPad(customerPad)">
                             Clear
@@ -280,7 +280,7 @@
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Manager Signature</label>
                         <canvas id="managerPad" class="border w-100 rounded bg-white" height="130"></canvas>
-                        <input type="hidden" name="manager_signature" id="manager_signature">
+                        <input type="hidden" name="manager_signature" id="manager_signature" value="{{ old('manager_signature') }}">
                         <button type="button" class="btn btn-outline-secondary btn-sm mt-2"
                             onclick="clearPad(managerPad)">
                             Clear
@@ -290,7 +290,7 @@
                     {{-- Notes --}}
                     <div class="col-12">
                         <label class="form-label fw-bold">Notes</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Write additional booking details..."></textarea>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Write additional booking details...">{{ old('notes') }}</textarea>
                     </div>
 
                     <div class="col-md-4">
@@ -494,6 +494,13 @@
                 canvas.width = rect.width * scale;
                 canvas.height = rect.height * scale;
                 ctx.scale(scale, scale);
+
+                const signature = document.getElementById(inputId).value;
+                if (signature.startsWith('data:image/png;base64,')) {
+                    const image = new Image();
+                    image.onload = () => ctx.drawImage(image, 0, 0, rect.width, rect.height);
+                    image.src = signature;
+                }
             }
 
             // Call resize once initially
@@ -570,6 +577,8 @@
         function clearPad(canvas) {
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const inputId = canvas.id === 'customerPad' ? 'customer_signature' : 'manager_signature';
+            document.getElementById(inputId).value = '';
         }
 
 
@@ -581,6 +590,20 @@
         const dishesInput = document.getElementById('dishes_input');
 
         let selectedDishes = [];
+        if (dishesInput.value) {
+            try {
+                const dishIds = JSON.parse(dishesInput.value);
+                const availableDishes = @json($dishes);
+                if (Array.isArray(dishIds)) {
+                    selectedDishes = dishIds.map(id => availableDishes.find(d => String(d.id) === String(id)))
+                        .filter(Boolean).map(d => ({ id: d.id, name: d.name }));
+                }
+            } catch (error) {
+                selectedDishes = [];
+            }
+            renderSelectedDishes();
+            updateDishesInput();
+        }
 
         // Display dishes when a package is selected
         pkgSelect.addEventListener('change', function() {
