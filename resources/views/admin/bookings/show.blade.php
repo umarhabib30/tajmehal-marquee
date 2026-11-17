@@ -92,27 +92,6 @@
                             </div>
                         @endif
                     </form>
-                    @if ($booking->status === \App\Models\Booking::STATUS_CANCELLED)
-                        <form action="{{ route('admin.booking.updateStatus', $booking->id) }}" method="POST" class="mt-3">
-                            @csrf
-                            @method('PATCH')
-                            <input type="hidden" name="status" value="Cancelled">
-                            <input type="hidden" name="record_refund" value="1">
-                            @php
-                                $availableRefund = max(0, (int) $booking->payments->sum('amount'));
-                            @endphp
-                            <p>Amount paid and not yet refunded: <strong>Rs {{ number_format($availableRefund) }}</strong></p>
-                            <label for="additional-refund">Additional refund returned now (Rs)</label>
-                            <input id="additional-refund" type="number" name="refund_amount" min="1" max="{{ $availableRefund }}"
-                                step="1" value="{{ old('refund_amount') }}" class="form-control" required>
-                            @error('refund_amount')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                            <button type="submit" class="btn btn-danger mt-2" {{ $availableRefund <= 0 ? 'disabled' : '' }}>
-                                Record Additional Refund
-                            </button>
-                        </form>
-                    @endif
                 @endmodulePerm
             </div>
         </div>
@@ -212,9 +191,27 @@
                 @endif
 
                 {{-- ================= PAYMENT HISTORY ================= --}}
-                @if ($booking->payments && $booking->payments->count() > 0)
-                    <h5 class="border-bottom pb-2 mb-3 text-uppercase text-secondary">Payment History</h5>
+                @php
+                    $availableRefund = max(0, (int) $booking->payments->sum('amount'));
+                @endphp
 
+                <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-2 mb-3">
+                    <h5 class="mb-0 text-uppercase text-secondary">Payment History</h5>
+                    @modulePerm('booking', 'edit')
+                        <div class="d-flex flex-wrap" style="gap: .5rem;">
+                            <a href="{{ route('admin.booking.addPaymentPage', $booking->id) }}" class="btn btn-sm btn-success">
+                                <i class="fas fa-plus"></i> Add Payment
+                            </a>
+                            @if ($availableRefund > 0)
+                                <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#add-refund-modal">
+                                    <i class="fas fa-undo"></i> Add Refund
+                                </button>
+                            @endif
+                        </div>
+                    @endmodulePerm
+                </div>
+
+                @if ($booking->payments && $booking->payments->count() > 0)
                     <div class="table-responsive mb-4">
                         <table class="table table-bordered align-middle">
                             <thead class="table-light">
@@ -223,6 +220,9 @@
                                     <th>Payment Date</th>
                                     <th>Amount (₨)</th>
                                     <th>Method</th>
+                                    @modulePerm('booking', 'edit')
+                                        <th style="width: 90px;">Action</th>
+                                    @endmodulePerm
                                 </tr>
                             </thead>
                             <tbody>
@@ -230,20 +230,127 @@
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d-M-Y') }}</td>
-                                        <td>₨ {{ number_format($payment->amount, 2) }}</td>
+                                        <td class="{{ $payment->amount < 0 ? 'text-danger' : 'text-success' }}">
+                                            ₨ {{ number_format($payment->amount, 0) }}
+                                        </td>
                                         <td>{{ $payment->payment_method ?? 'N/A' }}</td>
+                                        @modulePerm('booking', 'edit')
+                                            <td>
+                                                <button type="button"
+                                                    class="btn btn-sm btn-outline-primary edit-payment-btn"
+                                                    data-id="{{ $payment->id }}"
+                                                    data-amount="{{ abs((int) $payment->amount) }}"
+                                                    data-date="{{ \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d') }}"
+                                                    data-method="{{ $payment->payment_method }}"
+                                                    data-is-refund="{{ $payment->amount < 0 ? 1 : 0 }}"
+                                                    data-url="{{ route('admin.booking.updatePayment', $payment) }}">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                            </td>
+                                        @endmodulePerm
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot class="table-light">
                                 <tr>
                                     <th colspan="2" class="text-end">Net Paid (after refunds):</th>
-                                    <th colspan="2">₨ {{ number_format($booking->payments->sum('amount'), 2) }}</th>
+                                    @modulePerm('booking', 'edit')
+                                        <th colspan="3">₨ {{ number_format($booking->payments->sum('amount'), 0) }}</th>
+                                    @else
+                                        <th colspan="2">₨ {{ number_format($booking->payments->sum('amount'), 0) }}</th>
+                                    @endmodulePerm
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
+                @else
+                    <p class="text-muted fst-italic mb-4">No payments recorded yet.</p>
                 @endif
+
+                @modulePerm('booking', 'edit')
+                    @if ($availableRefund > 0)
+                        <div class="modal fade" id="add-refund-modal" tabindex="-1" role="dialog" aria-labelledby="add-refund-title" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <form action="{{ route('admin.booking.addRefund', $booking->id) }}" method="POST" class="modal-content">
+                                    @csrf
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="add-refund-title">Add Refund</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Amount paid and not yet refunded: <strong>Rs {{ number_format($availableRefund) }}</strong></p>
+                                        <div class="form-group">
+                                            <label for="standalone-refund-amount">Refund Amount (Rs)</label>
+                                            <input id="standalone-refund-amount" type="number" name="refund_amount"
+                                                min="1" max="{{ $availableRefund }}" step="1"
+                                                value="{{ old('refund_amount') }}" class="form-control @error('refund_amount') is-invalid @enderror" required>
+                                            @error('refund_amount')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="refund-date">Refund Date</label>
+                                            <input id="refund-date" type="date" name="refund_date" class="form-control"
+                                                value="{{ old('refund_date', now()->format('Y-m-d')) }}" required>
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label for="refund-method">Method / Note</label>
+                                            <select id="refund-method" name="refund_method" class="form-control">
+                                                <option value="Refund" @selected(old('refund_method', 'Refund') === 'Refund')>Refund</option>
+                                                <option value="Cancellation refund" @selected(old('refund_method') === 'Cancellation refund')>Cancellation refund</option>
+                                                <option value="Cash" @selected(old('refund_method') === 'Cash')>Cash</option>
+                                                <option value="Online Payment" @selected(old('refund_method') === 'Online Payment')>Online Payment</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger">Record Refund</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="modal fade" id="edit-payment-modal" tabindex="-1" role="dialog" aria-labelledby="edit-payment-title" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <form id="edit-payment-form" method="POST" class="modal-content">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="edit-payment-title">Edit Payment Entry</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p id="edit-payment-type-hint" class="text-muted small"></p>
+                                    <div class="form-group">
+                                        <label for="edit-payment-amount">Amount (Rs)</label>
+                                        <input id="edit-payment-amount" type="number" name="amount" min="1" step="1"
+                                            class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit-payment-date">Date</label>
+                                        <input id="edit-payment-date" type="date" name="payment_date" class="form-control" required>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label for="edit-payment-method">Method</label>
+                                        <input id="edit-payment-method" type="text" name="payment_method" class="form-control" list="payment-method-options">
+                                        <datalist id="payment-method-options">
+                                            <option value="Cash"></option>
+                                            <option value="Online Payment"></option>
+                                            <option value="Refund"></option>
+                                            <option value="Cancellation refund"></option>
+                                        </datalist>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                @endmodulePerm
 
 
                 {{-- ================= SIGNATURES ================= --}}
@@ -291,9 +398,9 @@
 
 @section('script')
     @modulePerm('booking', 'edit')
-        @if ($booking->status !== \App\Models\Booking::STATUS_CANCELLED)
-            <script>
-                $(function () {
+        <script>
+            $(function () {
+                @if ($booking->status !== \App\Models\Booking::STATUS_CANCELLED)
                     const form = document.getElementById('booking-status-form');
                     const status = document.getElementById('booking-status');
                     const amount = document.getElementById('refund-amount');
@@ -321,12 +428,29 @@
                         form.requestSubmit();
                     });
                     $('#refund-modal').on('shown.bs.modal', function () { amount.focus(); amount.select(); });
-                    @if ($errors->has('refund_amount'))
+                    @if ($errors->has('refund_amount') && !old('refund_method'))
                         $('#refund-modal').modal('show');
                     @endif
+                @endif
+
+                @if ($errors->has('refund_amount') && $availableRefund > 0)
+                    $('#add-refund-modal').modal('show');
+                @endif
+
+                $(document).on('click', '.edit-payment-btn', function () {
+                    const btn = $(this);
+                    const isRefund = btn.data('is-refund') == 1;
+                    $('#edit-payment-form').attr('action', btn.data('url'));
+                    $('#edit-payment-amount').val(btn.data('amount'));
+                    $('#edit-payment-date').val(btn.data('date'));
+                    $('#edit-payment-method').val(btn.data('method') || (isRefund ? 'Refund' : 'Cash'));
+                    $('#edit-payment-type-hint').text(isRefund
+                        ? 'Editing a refund entry. Enter the refund amount as a positive number.'
+                        : 'Editing a payment entry.');
+                    $('#edit-payment-modal').modal('show');
                 });
-            </script>
-        @endif
+            });
+        </script>
     @endmodulePerm
 
     @modulePerm('booking', 'delete')

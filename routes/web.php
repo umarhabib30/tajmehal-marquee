@@ -106,6 +106,8 @@ Route::middleware(['auth', 'admin_role'])->group(function () {
             Route::get('booking/package-dishes/{id}', [BookingController::class, 'getPackageDishes'])->name('booking.getPackageDishes');
             Route::get('/booking/add-payment/{id}', [BookingController::class, 'addPaymentPage'])->name('booking.addPaymentPage');
             Route::post('/booking/add-payment', [BookingController::class, 'addPayment'])->name('booking.addPayment');
+            Route::post('/booking/{id}/refund', [BookingController::class, 'addRefund'])->name('booking.addRefund');
+            Route::put('/booking/payment/{payment}', [BookingController::class, 'updatePayment'])->name('booking.updatePayment');
             Route::get('/bookings/invoice/{id}', [BookingController::class, 'invoice'])->name('booking.invoice');
             Route::get('/booking/create/{id}', [BookingController::class, 'create'])->name('booking.createWithCustomer');
             Route::post('booking/extra-guest', [BookingController::class, 'extraGuest'])->name('booking.extraGuest');

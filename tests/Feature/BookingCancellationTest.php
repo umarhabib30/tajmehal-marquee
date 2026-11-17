@@ -137,4 +137,37 @@ class BookingCancellationTest extends TestCase
         $this->post(route('admin.booking.update'), $payload)->assertSessionHasErrors('refund_amount');
         $this->assertEquals(3500, $booking->payments()->sum('amount'));
     }
+
+    public function test_standalone_refund_can_be_added_without_changing_status(): void
+    {
+        $booking = $this->paidBooking();
+        $this->post(route('admin.booking.addRefund', $booking->id), [
+            'refund_amount' => 1000,
+            'refund_date' => '2026-10-30',
+            'refund_method' => 'Refund',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('Active', $booking->fresh()->status);
+        $this->assertEquals(4000, $booking->payments()->sum('amount'));
+        $this->assertEquals(6000, $booking->fresh()->remaining_amount);
+        $this->assertSame(3, $booking->payments()->count());
+    }
+
+    public function test_payment_entry_can_be_edited_and_remaining_is_adjusted(): void
+    {
+        $booking = $this->paidBooking();
+        $payment = $booking->payments()->where('amount', 3000)->first();
+
+        $response = $this->from(route('admin.booking.show', $booking->id))
+            ->put(route('admin.booking.updatePayment', $payment), [
+                'amount' => 2500,
+                'payment_date' => '2026-10-29',
+                'payment_method' => 'Cash',
+            ]);
+
+        $response->assertSessionHasNoErrors()->assertRedirect();
+        $this->assertEquals(2500, (int) $payment->fresh()->amount);
+        $this->assertEquals(4500, $booking->payments()->sum('amount'));
+        $this->assertEquals(5500, (int) $booking->fresh()->remaining_amount);
+    }
 }

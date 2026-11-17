@@ -57,6 +57,8 @@ return [
         'admin.booking.update' => ['booking', 'edit'],
         'admin.booking.updateStatus' => ['booking', 'edit'],
         'admin.booking.addPayment' => ['booking', 'edit'],
+        'admin.booking.addRefund' => ['booking', 'edit'],
+        'admin.booking.updatePayment' => ['booking', 'edit'],
         'admin.booking.extraGuest' => ['booking', 'edit'],
         'admin.booking.delete' => ['booking', 'delete'],
 

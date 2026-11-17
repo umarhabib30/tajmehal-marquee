@@ -193,9 +193,23 @@ class BookingController extends Controller
 
     private function recordCancellationRefund(Request $request, Booking $booking): void
     {
+        $this->recordRefundEntry(
+            $request,
+            $booking,
+            minAmount: 0,
+            paymentMethod: 'Cancellation refund'
+        );
+    }
+
+    private function recordRefundEntry(
+        Request $request,
+        Booking $booking,
+        int $minAmount = 0,
+        string $paymentMethod = 'Refund'
+    ): void {
         $availableRefund = max(0, (int) $booking->payments()->sum('amount'));
         $refund = Validator::make($request->only('refund_amount'), [
-            'refund_amount' => ['required', 'integer', 'min:0', 'max:'.$availableRefund],
+            'refund_amount' => ['required', 'integer', 'min:'.$minAmount, 'max:'.$availableRefund],
         ], [
             'refund_amount.max' => 'The refund cannot exceed the amount paid and not yet refunded.',
         ])->validate();
@@ -203,8 +217,8 @@ class BookingController extends Controller
         if ($refund['refund_amount'] > 0) {
             $booking->payments()->create([
                 'amount' => -$refund['refund_amount'],
-                'payment_date' => Carbon::today(),
-                'payment_method' => 'Cancellation refund',
+                'payment_date' => $request->input('refund_date', Carbon::today()->toDateString()),
+                'payment_method' => $request->input('refund_method', $paymentMethod),
             ]);
             $booking->remaining_amount += $refund['refund_amount'];
         }
@@ -333,7 +347,7 @@ class BookingController extends Controller
 
     public function addPaymentPage($id)
     {
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::with(['customer', 'payments'])->findOrFail($id);
         $data = [
             'booking' => $booking,
             'heading' => 'Bookings',
@@ -346,23 +360,80 @@ class BookingController extends Controller
     public function addPayment(Request $request)
     {
         $request->validate([
+            'booking_id' => 'required|exists:bookings,id',
             'amount' => 'required|numeric|min:1',
             'payment_date' => 'required|date',
             'payment_method' => 'nullable|string|max:255',
         ]);
 
-        $booking = Booking::find($request->booking_id);
-        $booking->remaining_amount -= $request->amount;
-        $booking->save();
+        DB::transaction(function () use ($request) {
+            $booking = Booking::lockForUpdate()->findOrFail($request->booking_id);
+            $booking->remaining_amount -= $request->amount;
+            $booking->save();
 
-        Payment::create([
-            'booking_id' => $request->booking_id,
-            'amount' => $request->amount,
-            'payment_date' => $request->payment_date,
-            'payment_method' => $request->payment_method,
-        ]);
+            $booking->payments()->create([
+                'amount' => (int) $request->amount,
+                'payment_date' => $request->payment_date,
+                'payment_method' => $request->payment_method,
+            ]);
+        });
 
         return redirect()->back()->with('success', 'Payment added successfully.');
+    }
+
+    public function addRefund(Request $request, $id)
+    {
+        $request->validate([
+            'refund_date' => ['nullable', 'date'],
+            'refund_method' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        DB::transaction(function () use ($request, $id) {
+            $booking = Booking::lockForUpdate()->findOrFail($id);
+            $this->recordRefundEntry($request, $booking, 1);
+            $booking->save();
+        });
+
+        return redirect()->back()->with('success', 'Refund recorded successfully.');
+    }
+
+    public function updatePayment(Request $request, $payment)
+    {
+        $validated = $request->validate([
+            'amount' => ['required', 'integer', 'min:1'],
+            'payment_date' => ['required', 'date'],
+            'payment_method' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        DB::transaction(function () use ($validated, $payment) {
+            $payment = Payment::query()->findOrFail($payment);
+            $booking = Booking::lockForUpdate()->findOrFail($payment->booking_id);
+            $oldAmount = (int) $payment->amount;
+            $isRefund = $oldAmount < 0;
+            $newAmount = $isRefund
+                ? -abs((int) $validated['amount'])
+                : abs((int) $validated['amount']);
+
+            $otherNet = (int) $booking->payments()->whereKeyNot($payment->id)->sum('amount');
+            $resultingNet = $otherNet + $newAmount;
+            if ($resultingNet < 0) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'amount' => 'This change would make total refunds exceed total payments.',
+                ]);
+            }
+
+            $payment->update([
+                'amount' => $newAmount,
+                'payment_date' => $validated['payment_date'],
+                'payment_method' => $validated['payment_method'] ?: ($isRefund ? 'Refund' : $payment->payment_method),
+            ]);
+
+            // remaining moves opposite to ledger amount changes
+            $booking->remaining_amount -= ($newAmount - $oldAmount);
+            $booking->save();
+        });
+
+        return redirect()->back()->with('success', 'Payment entry updated successfully.');
     }
 
     public function extraGuest(Request $request)
